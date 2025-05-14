@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
+    <link rel="stylesheet" href="/css/style.css" >
+</head>
+<body>
+    <main class="container">
+        <!-- Navbar which can be reused across other pages -->
+        <%- include('../partials/navbar'); %>
+
+
+        <div class="welcome-container">
+            <h1>Weather Forecast</h1>
+        </div>
+        <!-- Information about the about page -->
+        <div class="weather-container">
+            <% if (weather && weather.data && weather.data.records && weather.data.records.length > 0) { %>
+                <% const forecast = weather.data.records[0]; %>
+                
+                <div class="forecast-section">
+                    <h2>General Forecast</h2>
+                    <p><strong>Date:</strong> <%= forecast.date %></p>
+                    <p><strong>Valid Period:</strong> <%= forecast.general.validPeriod.text %></p>
+                    <p><strong>Forecast:</strong> <%= forecast.general.forecast.text %> <span class="weather-code">(Code: <%= forecast.general.forecast.code %>)</span></p>
+                    <p><strong>Temperature:</strong> <%= forecast.general.temperature.low %> to <%= forecast.general.temperature.high %> <%= forecast.general.temperature.unit %></p>
+                    <p><strong>Relative Humidity:</strong> <%= forecast.general.relativeHumidity.low %> to <%= forecast.general.relativeHumidity.high %> <%= forecast.general.relativeHumidity.unit %></p>
+                    <p><strong>Wind:</strong> <%= forecast.general.wind.direction %>, <%= forecast.general.wind.speed.low %> to <%= forecast.general.wind.speed.high %> km/h</p>
+                    <p><strong>Last Updated:</strong> <%= new Date(forecast.updatedTimestamp).toLocaleString() %></p>
+                </div>
+                
+                <h2>Regional Forecasts</h2>
+                
+                <% forecast.periods.forEach((period, index) => { %>
+                    <div class="time-period">
+                        <h3>Period <%= index + 1 %>: <%= period.timePeriod.text %></h3>
+                        
+                        <table>
+                            <tr>
+                                <th>Region</th>
+                                <th>Forecast</th>
+                            </tr>
+                            <tr>
+                                <td>North</td>
+                                <td><%= period.regions.north.text %> <span class="weather-code">(Code: <%= period.regions.north.code %>)</span></td>
+                            </tr>
+                            <tr>
+                                <td>South</td>
+                                <td><%= period.regions.south.text %> <span class="weather-code">(Code: <%= period.regions.south.code %>)</span></td>
+                            </tr>
+                            <tr>
+                                <td>East</td>
+                                <td><%= period.regions.east.text %> <span class="weather-code">(Code: <%= period.regions.east.code %>)</span></td>
+                            </tr>
+                            <tr>
+                                <td>West</td>
+                                <td><%= period.regions.west.text %> <span class="weather-code">(Code: <%= period.regions.west.code %>)</span></td>
+                            </tr>
+                            <tr>
+                                <td>Central</td>
+                                <td><%= period.regions.central.text %> <span class="weather-code">(Code: <%= period.regions.central.code %>)</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                <% }); %>
+                
+            <% } else { %>
+                <p>No weather data available.</p>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>
