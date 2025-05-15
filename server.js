@@ -98,8 +98,8 @@ app.post("/delete/:id", async (req, res) => {
   });
 
 
-app.get('/demo', function(req, res) {
-  res.render('pages/demo');
+app.get('/signup', function(req, res) {
+  res.render('pages/signup');
 });
 
 

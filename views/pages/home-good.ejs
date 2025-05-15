@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kiap N' Save - Landing Page</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    .section {
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .section:nth-child(odd) {
+      background-color: #fffdee;
+    }
+
+    .section:nth-child(even) {
+      background-color: #e6f9ff;
+    }
+
+    h1, p {
+      margin: 20px 0;
+    }
+
+    .scroll-icon {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      width: 40px;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    .scroll-icon:hover {
+      opacity: 1;
+    }
+
+    .signup-button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      background-color: #4caf50;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    .signup-button:hover {
+      background-color: #388e3c;
+    }
+
+    .scroll-indicator {
+      position: fixed;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .scroll-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #bbb;
+      transition: background-color 0.3s;
+    }
+
+    .scroll-dot.active {
+      background-color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Progress Dots -->
+  <div class="scroll-indicator" id="scroll-indicator"></div>
+
+  <!-- Section 1: Welcome -->
+  <div class="section">
+    <h1>Welcome to Kiap N' Save</h1>
+    <h2>Snap receipts. Track groceries. Save smart.</h2>
+    <img src="/images/logo.png" style="max-width: 40%; height: auto;">
+    <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png" class="scroll-icon" onclick="scrollToSection(1)" alt="Scroll down">
+  </div>
+
+  <!-- Section 2: Sign Up -->
+  <div class="section">
+    <a href="/signup" class="signup-button"><img src="/images/getstarted.png" style="max-width: 50%; height: auto;">
+    </a>
+    <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png" class="scroll-icon" onclick="scrollToSection(2)" alt="Scroll down">
+  </div>
+
+  <!-- Section 3: Features -->
+  <div class="section">
+    <h1>Smart Budgeting</h1>
+    <p>Automatically extract receipt data and get insights on your spending.</p>
+    <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png" class="scroll-icon" onclick="scrollToSection(3)" alt="Scroll down">
+  </div>
+
+  <!-- Section 4: Try It Out -->
+  <div class="section">
+    <h1>Try It Out</h1>
+    <p>Upload a receipt and see how easy it is to track your expenses.</p>
+  </div>
+
+  <script>
+    const sections = document.querySelectorAll('.section');
+    let currentIndex = 0;
+
+    // Scroll via arrow keys
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' && currentIndex < sections.length - 1) {
+        scrollToSection(currentIndex + 1);
+      }
+      if (e.key === 'ArrowUp' && currentIndex > 0) {
+        scrollToSection(currentIndex - 1);
+      }
+    });
+
+    // Scroll via mouse wheel
+    let isScrolling = false;
+    window.addEventListener('wheel', function(e) {
+      if (isScrolling) return;
+      isScrolling = true;
+
+      if (e.deltaY > 0 && currentIndex < sections.length - 1) {
+        currentIndex++;
+      } else if (e.deltaY < 0 && currentIndex > 0) {
+        currentIndex--;
+      }
+
+      scrollToSection(currentIndex);
+      setTimeout(() => isScrolling = false, 700);
+    });
+
+    // Scroll programmatically
+    function scrollToSection(index) {
+      if (index >= 0 && index < sections.length) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+        currentIndex = index;
+        updateDots();
+      }
+    }
+
+    // Dots
+    const scrollIndicator = document.getElementById('scroll-indicator');
+    for (let i = 0; i < sections.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'scroll-dot';
+      dot.addEventListener('click', () => scrollToSection(i));
+      scrollIndicator.appendChild(dot);
+    }
+
+    function updateDots() {
+      document.querySelectorAll('.scroll-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    updateDots();
+  </script>
+
+</body>
+</html>

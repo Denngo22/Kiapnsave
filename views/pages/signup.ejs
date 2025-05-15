@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign Up – Kiap N' Save</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Base styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #8df0d5, #9fc3f8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Container */
+    .signup-container {
+      background: white;
+      padding: 40px 30px;
+      border-radius: 18px;
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2b4c60;
+      margin-bottom: 30px;
+      font-size: 2rem;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input, select {
+      padding: 12px;
+      font-size: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus, select:focus {
+      border-color: #4caf50;
+      box-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+      outline: none;
+    }
+
+    .submit-btn {
+      background: linear-gradient(to right, #4caf50, #2e7d32);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .submit-btn:hover {
+      background: linear-gradient(to right, #45a049, #1b5e20);
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 0.95em;
+      color: #444;
+    }
+
+    .footer a {
+      color: #2b6cb0;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    .error {
+      color: #e53935;
+      font-size: 0.9em;
+      margin-top: -10px;
+    }
+
+    /* Google button */
+    .social-login {
+      margin-top: 10px;
+    }
+
+    .google-button {
+      background: white;
+      color: #444;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .google-button:hover {
+      background: #f1f1f1;
+    }
+
+    .google-button img {
+      height: 20px;
+    }
+
+    hr {
+      margin: 30px 0;
+      border: none;
+      border-top: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="signup-container">
+    <img src="/images/signupnow.png" style="max-width: 40%; height: auto;">
+
+    <!-- Google Sign Up -->
+    <div class="social-login">
+      <button class="google-button">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+        Sign Up with Google
+      </button>
+    </div>
+
+    <hr>
+
+    <!-- Sign-Up Form -->
+    <form id="signupForm">
+      <label for="name">Name *</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="age">Age Range *</label>
+      <select id="age" name="age" required>
+        <option value="">-- Select Age Range --</option>
+        <option value="11-20">11–20</option>
+        <option value="21-30">21–30</option>
+        <option value="31-40">31–40</option>
+        <option value="41-50">41–50</option>
+        <option value="51-60">51–60</option>
+        <option value="61-70">61–70</option>
+        <option value="71-80">71–80</option>
+        <option value="81-90">81–90</option>
+        <option value="91-100">91–100</option>
+      </select>
+
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="supermarket">Most Visited Supermarket</label>
+      <select id="supermarket" name="supermarket">
+        <option value="">-- Select --</option>
+        <option value="fairprice">NTUC FairPrice</option>
+        <option value="shengsiong">Sheng Siong</option>
+        <option value="coldstorage">Cold Storage</option>
+        <option value="giant">Giant</option>
+        <option value="others">Others</option>
+      </select>
+
+      <label for="password">Password *</label>
+      <input type="password" id="password" name="password" required>
+
+      <label for="confirm">Confirm Password *</label>
+      <input type="password" id="confirm" name="confirm" required>
+
+      <div class="error" id="error-msg"></div>
+
+      <button type="submit" class="submit-btn">Create Account</button>
+    </form>
+
+    <div class="footer">
+      Already have an account? <a href="/login">Log In</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('signupForm');
+    const errorMsg = document.getElementById('error-msg');
+
+    form.addEventListener('submit', function (e) {
+      errorMsg.textContent = '';
+      const password = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm').value;
+
+      if (password !== confirm) {
+        e.preventDefault();
+        errorMsg.textContent = 'Passwords do not match.';
+      }
+    });
+  </script>
+</body>
+</html>

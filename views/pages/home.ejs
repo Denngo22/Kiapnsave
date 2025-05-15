@@ -1,38 +1,573 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"/>
-    <link rel="stylesheet" href="/css/style.css" >
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kiap N' Save - Landing Page</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+
+
+.section {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+  position: relative;
+
+  /* 🎨 Pastel rainbow background for all sections */
+  background: linear-gradient(270deg,
+    #ffdce0,
+    #ffe9d6,
+    #fffacc,
+    #d8fcd4,
+    #d6f0ff,
+    #e4d6ff,
+    #ffdce0
+  );
+  background-size: 1400% 1400%;
+  animation: rainbowFlow 30s ease infinite;
+}
+    
+
+    h1, p {
+      margin: 20px 0;
+    }
+
+    .scroll-icon {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+      width: 40px;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+
+    .scroll-icon:hover {
+      opacity: 1;
+    }
+
+    .signup-button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+
+
+    .scroll-indicator {
+      position: fixed;
+      top: 50%;
+      right: 20px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 100;
+    }
+
+    .scroll-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #bbb;
+      transition: background-color 0.3s;
+    }
+
+    .scroll-dot.active {
+      background-color: #333;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      padding: 4rem;
+      align-items: center;
+    }
+    .left {
+      max-width: 50%;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .logo img {
+      width: auto;
+      height: 120px;
+      margin-right: 0.5rem;
+    }
+    .brand {
+      font-size: 1.8rem;
+    }
+    .brand .orange {
+      color: orange;
+      font-weight: bold;
+    }
+    .brand .green {
+      color: green;
+      font-weight: bold;
+    }
+    h1 {
+      font-size: 3rem;
+      line-height: 1.2;
+    }
+    .highlight {
+      color: orange;
+    }
+    .buttons {
+      margin-top: 2rem;
+    }
+    .buttons button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      margin-right: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .get-started {
+      background-color: orange;
+      color: white;
+    }
+    .learn-more {
+      border: 2px solid green;
+      color: green;
+      background: transparent;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      max-width: 350px;
+    }
+    .progress-bar {
+      background: #eee;
+      border-radius: 12px;
+      height: 10px;
+      margin: 0.5rem 0 1rem;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: linear-gradient(to right, orange, green);
+      height: 100%;
+      width: 72.5%; /* 580/800 */
+    }
+    .info-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    .info-box {
+      flex: 1;
+      padding: 1rem;
+      border-radius: 12px;
+    }
+    .category {
+      background: #fff4e5;
+    }
+    .store {
+      background: #e8fff0;
+    }
+    .store h3 {
+      color: green;
+    }
+    .category h3 {
+      color: orange;
+    }
+
+@keyframes rainbowFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.big-logo {
+  height: 300px;
+  animation: bounce 3s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.speech-bubble {
+  margin-top: 1rem;
+  max-width: 260px;
+  padding: 1rem;
+  background: white;
+  border-radius: 1rem;
+  position: relative;
+  font-size: 1rem;
+  color: #444;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 30px;
+  border-width: 15px 15px 0;
+  border-style: solid;
+  border-color: white transparent transparent;
+}
+.card-scroll-wrapper {
+  position: relative;
+  width: 350px;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.card-scroll {
+  display: flex;
+  transition: transform 0.4s ease;
+  width: 700px; /* 2 cards * 350px */
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  width: 350px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.card-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 18px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.card-arrow.left {
+  left: -16px;
+}
+
+.card-arrow.right {
+  right: -16px;
+}
+
+  </style>
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let cardIndex = 0;
+  let chartRendered = false;
+  let trendChart = null;
+
+  function scrollCard(direction) {
+    cardIndex = Math.max(0, Math.min(1, cardIndex + direction));
+    document.getElementById('cardScroll').style.transform = `translateX(-${cardIndex * 350}px)`;
+
+    // Only create the chart the first time we scroll to it
+    if (cardIndex === 1 && !chartRendered) {
+      renderTrendChart();
+      chartRendered = true;
+    }
+  }
+
+  function renderTrendChart() {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    trendChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        datasets: [{
+          label: 'SGD Spent',
+          data: [120, 150, 130, 180],
+          fill: false,
+          borderColor: 'orange',
+          tension: 0.3,
+          pointBackgroundColor: 'green'
+        }]
+      },
+      options: {
+        responsive: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 50
+            }
+          }
+        }
+      }
+    });
+  }
+  setInterval(() => {
+  cardIndex = (cardIndex + 1) % 2; // Alternate between 0 and 1
+  document.getElementById('cardScroll').style.transform = `translateX(-${cardIndex * 350}px)`;
+
+  // Lazy-load the chart only once
+  if (cardIndex === 1 && !chartRendered) {
+    renderTrendChart();
+    chartRendered = true;
+  }
+}, 3000);
+</script>
+
+
+
+
 <body>
-        <main class="container">
-        <!-- Navbar which can be reused across other pages -->
-        <%- include('../partials/navbar'); %>
 
-        <!-- Information welcoming visitors to my page -->
-        <div class="welcome-container">
-            <h1>Welcome to my blog</h1>
-            <h2>Learn about what happened in my day!</h2>
+  <!-- Progress Dots -->
+  <div class="scroll-indicator" id="scroll-indicator"></div>
+
+ <!-- Section 1: Welcome -->
+<div class="section">
+  <div class="container">
+    <!-- Left Side: Text + CTA -->
+    <div class="left">
+      
+      <h1>Track Your Grocery Spending <span class="highlight">Effortlessly</span></h1>
+      <p>Never lose track of your receipts again. Upload, analyze, and save on your grocery expenditures.</p>
+      <div class="buttons">
+        <button class="get-started">Get Started</button>
+        <button class="learn-more">Learn More</button>
+      </div>
+    </div>
+
+    <!-- Right Side: Big Mascot Logo + Speech Bubble -->
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="speech-bubble"><b>
+        “Let me help you budget your groceries better!”</b>
+      </div>
+      <img src="/images/logotransparent.png" alt="Kiap N'Save mascot" class="big-logo" />
+      
+    </div>
+  </div>
+
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png" class="scroll-icon" onclick="scrollToSection(1)" alt="Scroll down">
+</div>
+
+
+  <!-- Section 2: Features -->
+<div class="section">
+  <h1>Smart Budgeting</h1>
+
+  <div style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; margin-top: 2rem;">
+    
+    <!-- Left: Mascot with speech bubble -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <!-- Speech Bubble -->
+      <div class="speech-bubble">
+        <b>“Wah why your vege so ex!”</b>
+      </div>
+
+      <!-- Flipped Mascot -->
+      <img src="/images/budget.png"
+           alt="Budgeting mascot"
+           style="max-height: 350px; width: auto; transform: scaleX(-1);" />
+    </div>
+
+    <div class="card-scroll-wrapper">
+
+
+  <!-- Scrollable Content -->
+  <div class="card-scroll" id="cardScroll">
+    <!-- Page 1: Monthly Overview -->
+    <div class="card">
+      <h3>Monthly Overview <span style="float:right;">May 2025</span></h3>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 1rem;">
+        <span style="color: purple;">$580 spent</span>
+        <span style="color: #555;">Budget: $800</span>
+      </div>
+      <div class="info-row">
+        <div class="info-box category">
+          <h3>Top Category</h3>
+          <p>Fresh Produce</p>
+          <p style="color: orange;">$220</p>
         </div>
-        <img src="./logo.png" onerror="this.style.border='2px solid red'">
-
-        <div class="new-post-btn-container">
-           <a href="/new" class="button" role="button">+ New Post</a>
+        <div class="info-box store">
+          <h3>Favorite Store</h3>
+          <p>FairPrice</p>
+          <p style="color: green;">10 Visits</p>
         </div>
+      </div>
+    </div>
 
-        <!-- Show blog posts -->
-        <% blogs.forEach(post => { %>
-            <article class="post-container">
-                <h3><%= post.title %></h3>
-                <p><%= post.content %></p>
-                <form action="/delete/<%= post.id %>" method="post" onsubmit="return confirm('Do you really want to delete this post?');">
-                    <button class="outline primary" type="submit">Delete</button>
-                </form>
-            </article>
-        <% }); %>
-    </main>
+    <!-- Page 2: Spending Trend -->
+    <div class="card">
+      <h3>Spending Trend</h3>
+      <canvas id="trendChart" width="300" height="200"></canvas>
+    </div>
+  </div>
+
+ 
+</div>
+  </div>
+
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png"
+       class="scroll-icon" onclick="scrollToSection(2)" alt="Scroll down">
+</div>
+
+
+
+<!-- Section 3: Explore Prices -->
+<div class="section" style="position: relative; height: 100vh; padding-top: 60px; padding-bottom: 60px; justify-content: flex-start; overflow: hidden;">
+  <h1 style="position: relative; z-index: 1; margin: 0;">Compare Grocery Prices Islandwide</h1>
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; align-items: flex-start; margin-top: 1.5rem; position: relative; z-index: 1; max-height: 80vh; overflow: hidden;">
+    <!-- Map + Pins -->
+    <div style="flex: 1; min-width: 300px; max-width: 500px; position: relative;">
+      <img src="/images/SGmap.png" alt="Singapore Map"
+           style="position: relative; width: 100%; opacity: 0.15; pointer-events: none; border-radius: 16px;" />
+
+      <!-- Price Pins -->
+      <div style="position: absolute; top: 35%; left: 20%; background: orange; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$5.80</div>
+      <div style="position: absolute; top: 62%; left: 48%; background: green; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$7.10</div>
+      <div style="position: absolute; top: 28%; left: 75%; background: red; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$2.30</div>
+    </div>
+
+    <!-- Comparison Card with Friends -->
+    <div class="card" style="max-width: 360px; padding: 1.2rem; overflow-y: auto;">
+      <h3 style="margin-top: 0;">👥 Compare with Friends</h3>
+      <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 1rem;">
+        <div style="text-align: center;">
+          <img src="/images/p1.png" alt="Ryan" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Robert</b><br/>$5.80</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="/images/p2.png" alt="James" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Steve</b><br/>$2.30</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="/images/p3.png" alt="Rachel" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Natasha</b><br/>$7.10</p>
+        </div>
+      </div>
+      <!-- Mascot with speech bubble -->
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; align-items: center;">
+        <img src="/images/chicken.png" alt="Kiap N'Save Mascot" style="height: 80px; width: auto;" />
+        <div class="speech-bubble" style="margin-top: 0.5rem; max-width: 220px; padding: 0.75rem; background: #fff8dc; border-radius: 12px; font-size: 0.85rem; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <b>"$7.10 for eggs?! I better go kampung buy already lah!"</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png"
+       class="scroll-icon" onclick="scrollToSection(3)" alt="Scroll down">
+</div>
+
+
+<!-- Section 4: Sign Up -->
+  <div class="section">
+    <a href="/signup" class="signup-button"><img src="/images/getstarted.png" style="max-width: 50%; height: auto;">
+    </a>
+    
+  </div>
+
+  <script>
+    const sections = document.querySelectorAll('.section');
+    let currentIndex = 0;
+
+    // Scroll via arrow keys
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' && currentIndex < sections.length - 1) {
+        scrollToSection(currentIndex + 1);
+      }
+      if (e.key === 'ArrowUp' && currentIndex > 0) {
+        scrollToSection(currentIndex - 1);
+      }
+    });
+
+    // Scroll via mouse wheel
+    let isScrolling = false;
+    window.addEventListener('wheel', function(e) {
+      if (isScrolling) return;
+      isScrolling = true;
+
+      if (e.deltaY > 0 && currentIndex < sections.length - 1) {
+        currentIndex++;
+      } else if (e.deltaY < 0 && currentIndex > 0) {
+        currentIndex--;
+      }
+
+      scrollToSection(currentIndex);
+      setTimeout(() => isScrolling = false, 700);
+    });
+
+    // Scroll programmatically
+    function scrollToSection(index) {
+      if (index >= 0 && index < sections.length) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+        currentIndex = index;
+        updateDots();
+      }
+    }
+
+    // Dots
+    const scrollIndicator = document.getElementById('scroll-indicator');
+    for (let i = 0; i < sections.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'scroll-dot';
+      dot.addEventListener('click', () => scrollToSection(i));
+      scrollIndicator.appendChild(dot);
+    }
+
+    function updateDots() {
+      document.querySelectorAll('.scroll-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    updateDots();
+  </script>
+
 </body>
 </html>
