@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Kiap N'Save</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9ff;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      height: 40px;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:nth-child(1) {
+      color: #8e44ec;
+    }
+
+    nav a:nth-child(2) {
+      color: #2980b9;
+    }
+
+    nav a:nth-child(3) {
+      color: #27ae60;
+    }
+
+    .signout {
+      border: 1px solid #f39c12;
+      color: #f39c12;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .main {
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+
+    .card-container {
+      margin-top: 2rem;
+      display: flex;
+      border: 3px solid orange;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .left-card, .right-card {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .left-card {
+      background: white;
+    }
+
+    .right-card {
+      background: #fff4e6;
+      text-align: center;
+    }
+
+    .upload-box {
+      border: 2px dashed #dfe6e9;
+      border-radius: 12px;
+      background: #f9fbfc;
+      padding: 2rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .upload-box i {
+      font-size: 2rem;
+      color: #00bcd4;
+    }
+
+    .upload-box p {
+      margin: 0.5rem 0;
+    }
+
+    .highlight {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .icon-circle {
+      background: #ffe0b2;
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .icon-circle img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .right-card p {
+      color: #e67e22;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="/images/kiaplogo.png" alt="Logo" />
+      <span>Kiap N'Save</span>
+    </div>
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/history">History</a>
+      <a href="/settings">Settings</a>
+    </nav>
+    <button class="signout" onclick="location.href='/logout'">Sign Out</button>
+  </header>
+
+  <!-- Main -->
+  <div class="main">
+    <h1>Your Dashboard</h1>
+
+    <div class="card-container">
+      <!-- Upload Section -->
+      <div class="left-card">
+        <h2 class="highlight">Upload Your Receipt</h2>
+        <p>Simply upload your grocery receipt and let our smart scanner do the rest! Track your spending and get insights instantly.</p>
+
+        <div class="upload-box">
+          <i>&uarr;</i>
+          <p><strong>Drag & drop receipt or click to upload</strong></p>
+          <p style="font-size: 0.85rem;">Supports: JPG, PNG, PDF (max 10MB)</p>
+        </div>
+
+        <p style="margin-top: 1rem; font-size: 0.85rem; color: #555;">Receipts are processed instantly with our smart scanner</p>
+      </div>
+
+      <!-- Analysis Section -->
+      <div class="right-card">
+        <div class="icon-circle">
+          <img src="/images/icon-receipt.png" alt="Receipt Icon" />
+        </div>
+        <h3 class="highlight">Instant Analysis</h3>
+        <p>We extract all details automatically</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

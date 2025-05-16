@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard | Kiap N'Save</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9ff;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      height: 40px;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:nth-child(1) {
+      color: #8e44ec;
+    }
+
+    nav a:nth-child(2) {
+      color: #2980b9;
+    }
+
+    nav a:nth-child(3) {
+      color: #27ae60;
+    }
+
+    .signout {
+      border: 1px solid #f39c12;
+      color: #f39c12;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .main {
+      padding: 2rem;
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  border-bottom: 4px solid transparent;
+  color: #666;
+  background: #fff;
+  transition: all 0.2s ease;
+  border-radius: 6px 6px 0 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+.tab:hover {
+  background: #fff8e1;
+  border-color: #f39c12;
+  color: #d35400;
+}
+
+.tab.active {
+  background: #fff3e0;
+  border-color: #f39c12;
+  color: #e67e22;
+}
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    .info-box {
+      flex: 1;
+      min-width: 250px;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      border: 2px solid #eee;
+    }
+
+    .info-box h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: bold;
+    }
+
+    .info-box .value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin: 0.3rem 0;
+    }
+
+    .chart-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #e0f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      border-radius: 8px;
+    }
+
+    .history-list {
+      width: 100%;
+      background: #f3f3f3;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+       body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9ff;
+      padding: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-bottom: 1px solid #eee;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      height: 40px;
+    }
+
+    .logo span {
+      font-size: 1.5rem;
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    nav a:nth-child(1) {
+      color: #8e44ec;
+    }
+
+    nav a:nth-child(2) {
+      color: #2980b9;
+    }
+
+    nav a:nth-child(3) {
+      color: #27ae60;
+    }
+
+    .signout {
+      border: 1px solid #f39c12;
+      color: #f39c12;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .main {
+      padding: 2rem;
+    }
+
+    .card-container {
+      margin-top: 1rem;
+      display: flex;
+      border: 3px solid orange;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+
+    .left-card, .right-card {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .left-card {
+      background: white;
+    }
+
+    .right-card {
+      background: #fff4e6;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    .upload-box {
+      border: 2px dashed #dfe6e9;
+      border-radius: 12px;
+      background: #f9fbfc;
+      padding: 2rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    .upload-box i {
+      font-size: 2rem;
+      color: #00bcd4;
+    }
+
+    .upload-box p {
+      margin: 0.5rem 0;
+    }
+
+    .highlight {
+      color: orange;
+      font-weight: bold;
+    }
+
+    .icon-circle {
+      background: #ffe0b2;
+      border-radius: 50%;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem auto;
+    }
+
+    .icon-circle img {
+      width: 32px;
+      height: 32px;
+    }
+
+    .right-card p {
+      color: #e67e22;
+      font-weight: 500;
+    }
+
+    table {
+      border-collapse: collapse;
+      margin-top: 2rem;
+      width: 100%;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 4px;
+      box-sizing: border-box;
+    }
+
+    input.warning {
+      background-color: #fff3cd;
+      border-color: #ffeeba;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 1rem;
+      padding: 8px 16px;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+      padding: 0.75rem 1.25rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+    }
+
+    .action-buttons button {
+      margin-right: 0.5rem;
+    }
+  .content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.cat-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid orange;
+  border-radius: 999px;
+  background: #fff8e1;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+.cat-btn:hover {
+  background: orange;
+  color: white;
+}
+.cat-btn.active {
+  background: orange;
+  color: white;
+}
+
+  </style>
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(tab + '-tab').classList.add('active');
+      document.getElementById(tab + '-content').classList.add('active');
+    }
+
+    window.onload = () => switchTab('overview');
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="/images/logobetter.png" alt="Logo" />
+      <span>Kiap N'Save</span>
+    </div>
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/friends">Friends</a>
+      <a href="/settings">Settings</a>
+    </nav>
+
+
+    <div style="display: flex; align-items: center; gap: 1rem;">
+  <span style="font-size: 1rem; font-weight: 500; color: #333;">👋 Hi again, <strong id="username">Auntie May!</strong></span>
+  <button class="signout" onclick="location.href='/logout'" style="margin: 0;">Sign Out</button>
+</div>
+  </header>
+
+  <div class="main">
+    <div class="tabs">
+      <div id="overview-tab" class="tab" onclick="switchTab('overview')">Overview</div>
+      <div id="compare-tab" class="tab" onclick="switchTab('compare')">Compare</div>
+      <div id="history-tab" class="tab" onclick="switchTab('history')">History</div>
+    </div>
+
+   <div id="overview-content" class="tab-content">
+  <div class="info-box" style="border-color: orange">
+    <h3 style="color: orange">Total Spent</h3>
+    <div class="value">$1,248.33</div>
+    <p style="color: gray;">+12% from last month</p>
+  </div>
+  <div class="info-box" style="border-color: #2ecc71">
+    <h3 style="color: #2ecc71">Top Category</h3>
+    <div class="value">Fresh Produce</div>
+    <p style="color: gray;">$345.12 (27%)</p>
+  </div>
+  <div class="info-box" style="border-color: #9b59b6">
+    <h3 style="color: #9b59b6">Favorite Store</h3>
+    <div class="value">FairPrice</div>
+    <p style="color: gray;">14 visits this month</p>
+  </div>
+
+  <!-- Spending Trend Chart -->
+  <div style="width: 100%; max-width: 800px; margin: 2rem auto 0;">
+    <canvas id="trendChart"></canvas>
+  </div>
+</div>
+<div id="compare-content" class="tab-content">
+  <div style="max-width: 900px; margin: 0 auto; display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start;">
+    
+    <!-- Filter Box -->
+<div id="category-buttons" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+  <button class="cat-btn active" data-cat="all">📊 All</button>
+  <button class="cat-btn" data-cat="vegetables">🥬 Vegetables</button>
+  <button class="cat-btn" data-cat="meat">🍖 Meat</button>
+  <button class="cat-btn" data-cat="seafood">🐟 Seafood</button>
+  <button class="cat-btn" data-cat="snacks">🍪 Snacks</button>
+  <button class="cat-btn" data-cat="beverages">🥤 Beverages</button>
+  <button class="cat-btn" data-cat="others">🛒 Others</button>
+</div>
+
+
+   
+
+    <!-- Comparison Summary -->
+    <div id="comparison-summary" style="flex: 3; background: #fffbea; border-left: 5px solid orange; border-radius: 6px; padding: 1rem;">
+      <p style="margin: 0; font-weight: 500; color: #d35400;">
+        📊 You are spending <strong>12% more</strong> this month than other similar Kiappers in Singapore.
+      </p>
+    </div>
+  </div>
+
+  <!-- Comparison Table -->
+  <table id="compare-table" style="width: 100%; max-width: 900px; margin: 2rem auto 0; border-collapse: collapse; background: white; border: 1px solid #ddd;">
+    <thead style="background: #f2f2f2;">
+      <tr>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">Name</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">April Spending</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">May Spending</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">Change (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Vegetables -->
+      <tr data-category="vegetables"><td>You</td><td>$80</td><td>$95</td><td style="color: green;">+18.8%</td></tr>
+      <tr data-category="vegetables"><td>Alice</td><td>$75</td><td>$70</td><td style="color: red;">-6.7%</td></tr>
+      <tr data-category="vegetables"><td>Ben</td><td>$90</td><td>$85</td><td style="color: green;">-5.6%</td></tr>
+      <tr data-category="vegetables"><td>Chloe</td><td>$85</td><td>$88</td><td style="color: green;">+3.5%</td></tr>
+
+      <!-- Meat -->
+      <tr data-category="meat"><td>You</td><td>$130</td><td>$125</td><td style="color: green;">-3.8%</td></tr>
+      <tr data-category="meat"><td>Alice</td><td>$140</td><td>$150</td><td style="color: orange;">+7.1%</td></tr>
+      <tr data-category="meat"><td>Ben</td><td>$110</td><td>$115</td><td style="color: green;">+4.5%</td></tr>
+      <tr data-category="meat"><td>Chloe</td><td>$120</td><td>$130</td><td style="color: orange;">+8.3%</td></tr>
+
+      <!-- Seafood -->
+      <tr data-category="seafood"><td>You</td><td>$90</td><td>$105</td><td style="color: orange;">+16.7%</td></tr>
+      <tr data-category="seafood"><td>Alice</td><td>$95</td><td>$92</td><td style="color: green;">-3.2%</td></tr>
+      <tr data-category="seafood"><td>Ben</td><td>$100</td><td>$98</td><td style="color: green;">-2%</td></tr>
+      <tr data-category="seafood"><td>Chloe</td><td>$110</td><td>$112</td><td style="color: orange;">+1.8%</td></tr>
+
+      <!-- Snacks -->
+      <tr data-category="snacks"><td>You</td><td>$70</td><td>$85</td><td style="color: orange;">+21.4%</td></tr>
+      <tr data-category="snacks"><td>Alice</td><td>$60</td><td>$65</td><td style="color: orange;">+8.3%</td></tr>
+      <tr data-category="snacks"><td>Ben</td><td>$85</td><td>$80</td><td style="color: green;">-5.9%</td></tr>
+      <tr data-category="snacks"><td>Chloe</td><td>$75</td><td>$78</td><td style="color: green;">+4%</td></tr>
+
+      <!-- Beverages -->
+      <tr data-category="beverages"><td>You</td><td>$50</td><td>$60</td><td style="color: orange;">+20%</td></tr>
+      <tr data-category="beverages"><td>Alice</td><td>$55</td><td>$58</td><td style="color: green;">+5.5%</td></tr>
+      <tr data-category="beverages"><td>Ben</td><td>$60</td><td>$57</td><td style="color: green;">-5%</td></tr>
+      <tr data-category="beverages"><td>Chloe</td><td>$52</td><td>$54</td><td style="color: green;">+3.8%</td></tr>
+
+      <!-- Others -->
+      <tr data-category="others"><td>You</td><td>$100</td><td>$95</td><td style="color: green;">-5%</td></tr>
+      <tr data-category="others"><td>Alice</td><td>$105</td><td>$110</td><td style="color: orange;">+4.8%</td></tr>
+      <tr data-category="others"><td>Ben</td><td>$90</td><td>$85</td><td style="color: green;">-5.6%</td></tr>
+      <tr data-category="others"><td>Chloe</td><td>$95</td><td>$100</td><td style="color: orange;">+5.3%</td></tr>
+   
+ 
+ </tbody>
+  </table>
+</div>
+
+ 
+
+    <div id="history-content" class="tab-content">
+  
+      <p style="text-align: right; margin-bottom: 0.5rem;">
+      <a href="/download-history" style="color: #2980b9; text-decoration: none; font-weight: 500;">
+        📥 Click here to download all your data
+      </a>
+    </p>
+  
+  
+  
+      <table style="width: 100%; max-width: 800px; margin: auto; border-collapse: collapse; background: white; border: 1px solid #ddd;">
+    <thead style="background: #f2f2f2;">
+      <tr>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">S/N</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">Date</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">Supermarket</th>
+        <th style="padding: 0.75rem; border: 1px solid #ddd;">Total Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">1</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">3 May 2025</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">NTUC</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">$68.40</td>
+      </tr>
+      <tr>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">2</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">1 May 2025</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">Cold Storage</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">$34.20</td>
+      </tr>
+      <tr>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">3</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">28 Apr 2025</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">RedMart</td>
+        <td style="padding: 0.75rem; border: 1px solid #ddd;">$82.15</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+  </div>
+<div class="content-wrapper">
+    <div class="card-container">
+      <div class="left-card">
+        <h2 class="highlight">Upload a Receipt</h2>
+
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+          <input type="file" name="receipt" accept="image/*" required />
+          <button type="submit">Upload & Scan</button>
+        </form>
+
+        <% if (typeof receipt !== 'undefined' && receipt) { %>
+          <div class="success-message">✅ Receipt uploaded and scanned successfully!</div>
+
+          <h3>Receipt Details</h3>
+          <p><strong>Supplier:</strong> <%= receipt.supplier_name?.value || "Unknown" %></p>
+          <p><strong>Total Amount:</strong> $<%= receipt.total_amount?.value || "?" %></p>
+
+          <form action="/save-receipt" method="POST">
+            <input type="hidden" name="supplier" value="<%= receipt.supplier_name?.value || '' %>" />
+            <input type="hidden" name="total" value="<%= receipt.total_amount?.value || '' %>" />
+
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Quantity</th>
+                  <th>Unit Price</th>
+                  <th>Total</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="line-items">
+                <% receipt.line_items.forEach((item, index) => { %>
+                  <tr>
+                    <td><input type="text" name="items[<%= index %>][description]" value="<%= item.description || '' %>" class="<%= (!item.description || item.description.length < 2) ? 'warning' : '' %>"></td>
+                    <td><input type="number" step="1" name="items[<%= index %>][quantity]" value="<%= item.quantity || 1 %>"></td>
+                    <td><input type="number" step="0.01" name="items[<%= index %>][unit_price]" value="<%= item.unit_price || '' %>" class="<%= !item.unit_price ? 'warning' : '' %>"></td>
+                    <td><input type="number" step="0.01" name="items[<%= index %>][total_amount]" value="<%= item.total_amount || '' %>" class="<%= !item.total_amount ? 'warning' : '' %>"></td>
+                    <td class="action-buttons">
+                      <button type="button" onclick="this.closest('tr').remove()">🗑️</button>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+
+            <button type="button" onclick="addRow()">➕ Add Row</button>
+            <button type="submit">📎 Save Receipt</button>
+          </form>
+
+        <% } else { %>
+          <p><em>No receipt data found. Try uploading a receipt above.</em></p>
+        <% } %>
+      </div>
+
+      <div class="right-card">
+        <% if (typeof receipt !== 'undefined' && receipt) { %>
+          <h3 class="highlight">Uploaded Receipt Image</h3>
+          <p>Please compare the extracted data with your receipt to ensure everything looks correct.</p>
+          <img src="/<%= image %>" alt="Uploaded Receipt Image">
+        <% } else { %>
+          <div class="icon-circle">
+            <img src="/images/thinking.png" alt="Receipt Icon" />
+          </div>
+          <h3 class="highlight">Instant Analysis</h3>
+          <p>Kiap N' Save will extract all details automatically</p>
+        <% } %>
+      </div>
+    </div>
+  </div></div>
+
+
+<!-- Chart-->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  let chartInitialized = false;
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(tab + '-tab').classList.add('active');
+    document.getElementById(tab + '-content').classList.add('active');
+
+    if (tab === 'overview' && !chartInitialized) {
+      setTimeout(initTrendChart, 100);
+      chartInitialized = true;
+    }
+  }
+
+  function initTrendChart() {
+    const canvas = document.getElementById('trendChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+        datasets: [{
+          label: 'Monthly Spending ($)',
+          data: [950, 1020, 1150, 1320, 1248],
+          borderColor: 'orange',
+          backgroundColor: 'rgba(255,165,0,0.1)',
+          tension: 0.3,
+          fill: true,
+          pointBackgroundColor: 'orange'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          title: {
+            display: true,
+            text: 'Spending Trend',
+            font: { size: 18 },
+            color: '#333'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: val => '$' + val
+            }
+          }
+        }
+      }
+    });
+  }
+
+  window.onload = () => switchTab('overview');
+</script>
+
+<!-- Compare-->
+<script>
+  const categoryData = {
+    all:        { label: "All Categories", icon: "📊", color: "#d35400" },
+    vegetables: { label: "Vegetables", icon: "🥬", color: "#27ae60" },
+    meat:       { label: "Meat", icon: "🍖", color: "#c0392b" },
+    seafood:    { label: "Seafood", icon: "🐟", color: "#2980b9" },
+    snacks:     { label: "Snacks", icon: "🍪", color: "#e67e22" },
+    beverages:  { label: "Beverages", icon: "🥤", color: "#8e44ad" },
+    others:     { label: "Others", icon: "🛒", color: "#7f8c8d" }
+  };
+
+function updateComparison(selectedCategory) {
+  const selected = selectedCategory || document.querySelector('.cat-btn.active')?.dataset.cat || "all";
+
+
+const totalRow = document.getElementById("total-row");
+if (totalRow) {
+  totalRow.style.display = (selected === "all") ? "none" : "";
+}
+
+    const rows = document.querySelectorAll("#compare-table tbody tr");
+    const summary = document.getElementById("comparison-summary");
+
+    const { icon, label, color } = categoryData[selected] || categoryData["all"];
+    const badgeHTML = `
+      <div style="width: 48px; height: 48px; background: ${color}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; margin-right: 1rem;">
+        ${icon}
+      </div>
+    `;
+
+    let summaryText = "";
+
+    const nameTotals = {}; // person → { april, may }
+
+    rows.forEach(row => {
+      const category = row.getAttribute("data-category");
+      const isMatch = selected === "all" || category === selected;
+
+      const name = row.cells[0].innerText.trim();
+      const april = parseFloat(row.cells[1].innerText.replace('$', ''));
+      const may = parseFloat(row.cells[2].innerText.replace('$', ''));
+
+      if (!nameTotals[name]) {
+        nameTotals[name] = { april: 0, may: 0, rows: [] };
+      }
+
+      nameTotals[name].rows.push(row);
+
+      if (isMatch) {
+        nameTotals[name].april += april;
+        nameTotals[name].may += may;
+      }
+
+      row.style.display = selected === "all" ? "none" : (isMatch ? "" : "none");
+    });
+
+    // Generate new table for ALL mode
+    const tableBody = document.querySelector("#compare-table tbody");
+    const existingAggRows = document.querySelectorAll(".agg-row");
+    existingAggRows.forEach(row => row.remove());
+
+    if (selected === "all") {
+      let userMay = 0;
+      let peerTotal = 0;
+      let peerCount = 0;
+
+      for (const name in nameTotals) {
+        const { april, may } = nameTotals[name];
+
+        // Insert new aggregate row
+        const newRow = document.createElement("tr");
+        newRow.className = "agg-row";
+        newRow.innerHTML = `
+          <td>${name}</td>
+          <td>$${april.toFixed(2)}</td>
+          <td>$${may.toFixed(2)}</td>
+          <td style="color: ${may - april >= 0 ? 'orange' : 'green'};">
+            ${(may - april >= 0 ? '+' : '') + ((may - april) / april * 100).toFixed(1)}%
+          </td>
+        `;
+        tableBody.appendChild(newRow);
+
+        if (name.toLowerCase() === "you") {
+          userMay = may;
+        } else {
+          peerTotal += may;
+          peerCount++;
+        }
+      }
+
+      if (peerCount > 0) {
+        const peerAvg = peerTotal / peerCount;
+        const diff = ((userMay - peerAvg) / peerAvg) * 100;
+        const rounded = Math.abs(diff).toFixed(1);
+        const direction = diff > 0 ? "more" : "less";
+
+        summaryText = `
+          <span style="font-size: 1.1rem; color: ${color}; font-weight: 500;">
+            You are spending <strong>${rounded}% ${direction}</strong> this month across <strong>${label}</strong> compared to other similar Kiappers in Singapore.
+          </span>
+        `;
+      } else {
+        summaryText = `
+          <span style="font-size: 1.1rem; color: ${color}; font-weight: 500;">
+            No comparison available for <strong>${label}</strong>.
+          </span>
+        `;
+      }
+
+    } else {
+      // Individual category mode
+      let userMay = nameTotals["You"]?.may || 0;
+      let peerTotal = 0;
+      let peerCount = 0;
+
+      for (const name in nameTotals) {
+        if (name !== "You") {
+          peerTotal += nameTotals[name].may;
+          peerCount++;
+        }
+      }
+
+      if (peerCount > 0) {
+        const peerAvg = peerTotal / peerCount;
+        const diff = ((userMay - peerAvg) / peerAvg) * 100;
+        const rounded = Math.abs(diff).toFixed(1);
+        const direction = diff > 0 ? "more" : "less";
+
+        summaryText = `
+          <span style="font-size: 1.1rem; color: ${color}; font-weight: 500;">
+            You are spending <strong>${rounded}% ${direction}</strong> this month on <strong>${label}</strong> compared to other similar Kiappers in Singapore.
+          </span>
+        `;
+      } else {
+        summaryText = `
+          <span style="font-size: 1.1rem; color: ${color}; font-weight: 500;">
+            No comparison available for <strong>${label}</strong>.
+          </span>
+        `;
+      }
+    }
+
+    summary.innerHTML = `
+      <div style="display: flex; align-items: center;">
+        ${badgeHTML}
+        ${summaryText}
+      </div>
+    `;
+
+    
+  }
+
+  document.addEventListener("DOMContentLoaded", updateComparison);
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const selected = btn.dataset.cat;
+      updateComparison(selected);
+    });
+  });
+
+  // trigger once at load
+  updateComparison("all");
+});
+
+
+
+</script>
+
+
+</body>
+</html>

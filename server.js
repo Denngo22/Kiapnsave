@@ -1,120 +1,123 @@
 // Needed for dotenv
 require("dotenv").config();
 
-// Needed for Express
-var express = require('express')
-var axios = require('axios'); 
-var app = express()
+// Needed for core packages
+const express = require('express');
+const axios = require('axios');
+const multer = require('multer');
+const sharp = require('sharp');
+const path = require('path');
+const fs = require('fs');
+const FormData = require('form-data');
+const { v4: uuidv4 } = require('uuid');
 
-// Needed for EJS
-app.set('view engine', 'ejs');
-
-// Needed for public directory
-app.use(express.static(__dirname + '/public'));
-
-// Needed for parsing form data
-app.use(express.json());       
-app.use(express.urlencoded({extended: true}));
+// Initialize Express
+const app = express();
 
 // Needed for Prisma to connect to database
-const { PrismaClient } = require('@prisma/client')
+const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-// Main landing page
-app.get('/', async function(req, res) {
+// Setup EJS view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-    // Try-Catch for any errors
-    try {
-        // Get all blog posts
-        const blogs = await prisma.post.findMany({
-                orderBy: [
-                  {
-                    id: 'desc'
-                  }
-                ]
-        });
+// Serve static files
+app.use(express.static(__dirname + '/public'));
+app.use(express.static('uploads'));
 
-        // Render the homepage with all the blog posts
-        await res.render('pages/home', { blogs: blogs });
-      } catch (error) {
-        res.render('pages/home');
-        console.log(error);
-      } 
+// Body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Multer setup for file uploads
+const storage = multer.diskStorage({
+  destination: 'uploads/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage });
+
+// === ROUTES ===
+
+// Landing page
+app.get('/', async (req, res) => {
+  try {
+    const blogs = await prisma.post.findMany({ orderBy: { id: 'desc' } });
+    res.render('pages/home', { blogs });
+  } catch (error) {
+    console.log(error);
+    res.render('pages/home');
+  }
 });
 
-// About page
-app.get('/about', function(req, res) {
-    res.render('pages/about');
-});
-
-// New post page
-app.get('/new', function(req, res) {
-    res.render('pages/new');
-});
-
-// Create a new post
-app.post('/new', async function(req, res) {
-    
-    // Try-Catch for any errors
-    try {
-        // Get the title and content from submitted form
-        const { title, content } = req.body;
-
-        // Reload page if empty title or content
-        if (!title || !content) {
-            console.log("Unable to create new post, no title or content");
-            res.render('pages/new');
-        } else {
-            // Create post and store in database
-            const blog = await prisma.post.create({
-                data: { title, content },
-            });
-
-            // Redirect back to the homepage
-            res.redirect('/');
-        }
-      } catch (error) {
-        console.log(error);
-        res.render('pages/new');
-      }
-
-});
-
-// Delete a post by id
-app.post("/delete/:id", async (req, res) => {
-    const { id } = req.params;
-    
-    try {
-        await prisma.post.delete({
-            where: { id: parseInt(id) },
-        });
-      
-        // Redirect back to the homepage
-        res.redirect('/');
-    } catch (error) {
-        console.log(error);
-        res.redirect('/');
-    }
-  });
-
-
-app.get('/signup', function(req, res) {
+// Signup page
+app.get('/signup', (req, res) => {
   res.render('pages/signup');
 });
 
+// Dashboard page
+app.get('/dashboard', (req, res) => {
+  res.render('pages/dashboard', { receipt: null, image: null });
+});
 
-app.get('/weather', async (req, res) => {
-    try {
-      const response = await axios.get('https://api-open.data.gov.sg/v2/real-time/api/twenty-four-hr-forecast');
-      res.render('pages/weather', { weather: response.data });
-    } catch (error) {
-      console.error(error);
-      res.send('Error fetching weather data');
-    }
-  });
+// Upload + OCR route
+app.post('/upload', upload.single('receipt'), async (req, res) => {
+  try {
+    const originalImagePath = path.join(__dirname, req.file.path);
+    const processedImagePath = path.join(__dirname, 'uploads', `processed-${uuidv4()}.png`);
 
+    // Preprocess the image using sharp
+    await sharp(originalImagePath)
+      .grayscale()
+      .normalize()
+      .threshold(160)
+      .toFile(processedImagePath);
 
+    // Send to Mindee
+    const form = new FormData();
+    form.append('document', fs.createReadStream(processedImagePath));
 
+    const mindeeResponse = await axios.post(
+      'https://api.mindee.net/v1/products/mindee/expense_receipts/v5/predict',
+      form,
+      {
+        headers: {
+          Authorization: `Token ${process.env.MINDEE_API_KEY}`,
+          ...form.getHeaders()
+        }
+      }
+    );
 
-// Tells the app which port to run on
-app.listen(8080);
+    const prediction = mindeeResponse.data.document.inference.prediction;
+
+    // Construct cleaned receipt object
+    const cleanedReceipt = {
+      supplier_name: prediction.supplier_name,
+      total_amount: prediction.total_amount,
+      line_items: prediction.line_items || []
+    };
+
+    res.render('pages/dashboard', {
+      receipt: cleanedReceipt,
+      image: req.file.filename
+    });
+
+  } catch (error) {
+    console.error('Mindee OCR failed:', error.response?.data || error.message);
+    res.send(`<pre>${JSON.stringify(error.response?.data || error.message, null, 2)}</pre>`);
+  }
+});
+
+// Save receipt handler (demo)
+app.post('/save-receipt', async (req, res) => {
+  const { supplier, total, items } = req.body;
+  // Optional: Save to Prisma DB
+  res.send('🧾 Receipt saved successfully! (demo only)');
+});
+
+// Start server
+app.listen(8080, () => {
+  console.log('Server running on http://localhost:8080');
+});
