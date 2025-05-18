@@ -5,7 +5,6 @@
   <title>Sign Up – Kiap N' Save</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* Base styles */
     body {
       margin: 0;
       padding: 0;
@@ -17,20 +16,19 @@
       min-height: 100vh;
     }
 
-    /* Container */
     .signup-container {
       background: white;
       padding: 40px 30px;
       border-radius: 18px;
       box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
       width: 100%;
-      max-width: 500px;
+      max-width: 520px;
     }
 
     h2 {
       text-align: center;
       color: #2b4c60;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       font-size: 2rem;
     }
 
@@ -96,74 +94,37 @@
       margin-top: -10px;
     }
 
-    /* Google button */
-    .social-login {
-      margin-top: 10px;
-    }
-
-    .google-button {
-      background: white;
-      color: #444;
-      border: 2px solid #ddd;
-      border-radius: 10px;
-      font-size: 1rem;
-      padding: 12px;
+    .radio-group {
       display: flex;
+      gap: 15px;
       align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
     }
 
-    .google-button:hover {
-      background: #f1f1f1;
-    }
-
-    .google-button img {
-      height: 20px;
-    }
-
-    hr {
-      margin: 30px 0;
-      border: none;
-      border-top: 1px solid #ddd;
+    .radio-group label {
+      font-weight: normal;
     }
   </style>
 </head>
 <body>
 
   <div class="signup-container">
-    <img src="/images/signupnow.png" style="max-width: 40%; height: auto;">
+    <img src="/images/signupnow.png" style="max-width: 40%; height: auto; display: block; margin: 0 auto 20px;">
+    <h2>Create Your Account</h2>
 
-    <!-- Google Sign Up -->
-    <div class="social-login">
-      <button class="google-button">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Sign Up with Google
-      </button>
-    </div>
+    <form id="signupForm" action="/signup" method="POST">
 
-    <hr>
-
-    <!-- Sign-Up Form -->
-    <form id="signupForm">
       <label for="name">Name *</label>
       <input type="text" id="name" name="name" required>
 
-      <label for="age">Age Range *</label>
-      <select id="age" name="age" required>
-        <option value="">-- Select Age Range --</option>
-        <option value="11-20">11–20</option>
-        <option value="21-30">21–30</option>
-        <option value="31-40">31–40</option>
-        <option value="41-50">41–50</option>
-        <option value="51-60">51–60</option>
-        <option value="61-70">61–70</option>
-        <option value="71-80">71–80</option>
-        <option value="81-90">81–90</option>
-        <option value="91-100">91–100</option>
-      </select>
+      <label>Gender *</label>
+      <div class="radio-group">
+        <label><input type="radio" name="gender" value="Male" required> Male</label>
+        <label><input type="radio" name="gender" value="Female"> Female</label>
+        <label><input type="radio" name="gender" value="Not Sure"> I'm Not Sure</label>
+      </div>
+
+      <label for="age">Age *</label>
+      <input type="number" id="age" name="age" min="1" max="120" required>
 
       <label for="email">Email *</label>
       <input type="email" id="email" name="email" required>
@@ -184,6 +145,9 @@
       <label for="confirm">Confirm Password *</label>
       <input type="password" id="confirm" name="confirm" required>
 
+      <label for="invite">Special Invitation Code *</label>
+      <input type="text" id="invite" name="invite" required>
+
       <div class="error" id="error-msg"></div>
 
       <button type="submit" class="submit-btn">Create Account</button>
@@ -200,14 +164,24 @@
 
     form.addEventListener('submit', function (e) {
       errorMsg.textContent = '';
+
       const password = document.getElementById('password').value;
       const confirm = document.getElementById('confirm').value;
+      const invite = document.getElementById('invite').value;
 
       if (password !== confirm) {
         e.preventDefault();
         errorMsg.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      if (invite.trim().toLowerCase() !== 'ilovekns') {
+        e.preventDefault();
+        errorMsg.textContent = 'Invalid invitation code.';
+        return;
       }
     });
   </script>
+
 </body>
 </html>

@@ -391,7 +391,16 @@
 
 
     <div style="display: flex; align-items: center; gap: 1rem;">
-  <span style="font-size: 1rem; font-weight: 500; color: #333;">👋 Hi again, <strong id="username">Auntie May!</strong></span>
+<%
+  const rawGender = user.gender?.trim().toLowerCase();
+  const prefix = rawGender === 'female' ? 'Aunty' : rawGender === 'male' ? 'Uncle' : '';
+  const nameCapitalized = user.name.charAt(0).toUpperCase() + user.name.slice(1);
+%>
+
+<span style="font-size: 1rem; font-weight: 500; color: #333;">
+  👋 Hi again, <strong id="username"><%= prefix %> <%= nameCapitalized %>!</strong>
+</span>
+
   <button class="signout" onclick="location.href='/logout'" style="margin: 0;">Sign Out</button>
 </div>
   </header>
@@ -560,40 +569,58 @@
           <div class="success-message">✅ Receipt uploaded and scanned successfully!</div>
 
           <h3>Receipt Details</h3>
-          <p><strong>Supplier:</strong> <%= receipt.supplier_name?.value || "Unknown" %></p>
-          <p><strong>Total Amount:</strong> $<%= receipt.total_amount?.value || "?" %></p>
+          <p><strong>Supplier:</strong> <%= receipt.supplier_name || "Unknown" %></p>
+<p><strong>Total Amount:</strong> $<%= receipt.total_amount || "?" %></p>
+
 
           <form action="/save-receipt" method="POST">
-            <input type="hidden" name="supplier" value="<%= receipt.supplier_name?.value || '' %>" />
-            <input type="hidden" name="total" value="<%= receipt.total_amount?.value || '' %>" />
+            <input type="hidden" name="supplier" value="<%= receipt.supplier_name || '' %>" />
+<input type="hidden" name="total" value="<%= receipt.total_amount || '' %>" />
+
 
             <table>
-              <thead>
-                <tr>
-                  <th>Description</th>
-                  <th>Quantity</th>
-                  <th>Unit Price</th>
-                  <th>Total</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="line-items">
-                <% receipt.line_items.forEach((item, index) => { %>
-                  <tr>
-                    <td><input type="text" name="items[<%= index %>][description]" value="<%= item.description || '' %>" class="<%= (!item.description || item.description.length < 2) ? 'warning' : '' %>"></td>
-                    <td><input type="number" step="1" name="items[<%= index %>][quantity]" value="<%= item.quantity || 1 %>"></td>
-                    <td><input type="number" step="0.01" name="items[<%= index %>][unit_price]" value="<%= item.unit_price || '' %>" class="<%= !item.unit_price ? 'warning' : '' %>"></td>
-                    <td><input type="number" step="0.01" name="items[<%= index %>][total_amount]" value="<%= item.total_amount || '' %>" class="<%= !item.total_amount ? 'warning' : '' %>"></td>
-                    <td class="action-buttons">
-                      <button type="button" onclick="this.closest('tr').remove()">🗑️</button>
-                    </td>
-                  </tr>
-                <% }) %>
-              </tbody>
-            </table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Price</th>
+      <th>Category</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="line-items">
+    <% receipt.line_items.forEach((item, index) => { %>
+      <tr>
+        <td>
+          <input type="text" name="items[<%= index %>][description]" value="<%= item.description || '' %>" class="<%= (!item.description || item.description.length < 2) ? 'warning' : '' %>">
+        </td>
+        <td>
+          <input type="number" step="0.01" name="items[<%= index %>][unit_price]" value="<%= item.unit_price || '' %>" class="<%= !item.unit_price ? 'warning' : '' %>">
+        </td>
+        <td>
+          <select name="items[<%= index %>][category]">
+            <option value="">Select Category</option>
+            <option value="vegetables">Vegetables</option>
+            <option value="meat">Meat</option>
+            <option value="seafood">Seafood</option>
+            <option value="snacks">Snacks</option>
+            <option value="beverages">Beverages</option>
+            <option value="others">Others</option>
+          </select>
+        </td>
+        <td class="action-buttons">
+          <button type="button" onclick="this.closest('tr').remove()">🗑️</button>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+
 
             <button type="button" onclick="addRow()">➕ Add Row</button>
-            <button type="submit">📎 Save Receipt</button>
+            <button id="saveBtn" type="submit">📎 Save Receipt</button>
+<span id="saveMsg" style="margin-left: 1rem; color: green; font-weight: 500;"></span>
+
           </form>
 
         <% } else { %>
@@ -850,6 +877,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+</script>
+<script>
+  document.getElementById('saveBtn').addEventListener('click', async function (e) {
+    e.preventDefault();
+
+    const form = e.target.closest('form');
+    const formData = new FormData(form);
+
+    const response = await fetch('/save-receipt', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+    document.getElementById('saveMsg').textContent = result.message;
+
+    setTimeout(() => {
+      document.getElementById('saveMsg').textContent = '';
+    }, 3000);
+  });
 </script>
 
 

@@ -19,3 +19,26 @@ model Post {
   title     String
   content   String
 }
+
+
+model User {
+  id          Int       @id @default(autoincrement())
+  name        String
+  age         Int
+  gender      String
+  email       String    @unique
+  password    String
+  supermarket String?
+  createdAt   DateTime  @default(now())
+
+  receipts    Receipt[] // 
+}
+model Receipt {
+  id         Int      @id @default(autoincrement())
+  supplier   String
+  total      Float
+  imagePath  String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+}
