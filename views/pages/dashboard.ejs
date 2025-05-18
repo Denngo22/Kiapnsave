@@ -414,20 +414,23 @@
 
    <div id="overview-content" class="tab-content">
   <div class="info-box" style="border-color: orange">
-    <h3 style="color: orange">Total Spent</h3>
-    <div class="value">$1,248.33</div>
-    <p style="color: gray;">+12% from last month</p>
-  </div>
-  <div class="info-box" style="border-color: #2ecc71">
-    <h3 style="color: #2ecc71">Top Category</h3>
-    <div class="value">Fresh Produce</div>
-    <p style="color: gray;">$345.12 (27%)</p>
-  </div>
-  <div class="info-box" style="border-color: #9b59b6">
-    <h3 style="color: #9b59b6">Favorite Store</h3>
-    <div class="value">FairPrice</div>
-    <p style="color: gray;">14 visits this month</p>
-  </div>
+  <h3 style="color: orange">Total Spent</h3>
+  <div class="value">$<%= overview.totalSpent.toFixed(2) %></div>
+  <p style="color: gray;">(This month)</p>
+</div>
+
+<div class="info-box" style="border-color: #2ecc71">
+  <h3 style="color: #2ecc71">Top Category</h3>
+  <div class="value">WIP</div>
+  <p style="color: gray;">based on item breakdown</p>
+</div>
+
+<div class="info-box" style="border-color: #9b59b6">
+  <h3 style="color: #9b59b6">Favourite Store</h3>
+  <div class="value"><%= overview.favouriteStore %></div>
+  <p style="color: gray;">(most visited)</p>
+</div>
+
 
   <!-- Spending Trend Chart -->
   <div style="width: 100%; max-width: 800px; margin: 2rem auto 0;">
@@ -618,7 +621,7 @@
 
 
             <button type="button" onclick="addRow()">➕ Add Row</button>
-            <button id="saveBtn" type="submit">📎 Save Receipt</button>
+            <button type="submit" id="saveBtn">📎 Save Receipt</button>
 <span id="saveMsg" style="margin-left: 1rem; color: green; font-weight: 500;"></span>
 
           </form>
@@ -878,26 +881,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </script>
-<script>
-  document.getElementById('saveBtn').addEventListener('click', async function (e) {
-    e.preventDefault();
 
-    const form = e.target.closest('form');
-    const formData = new FormData(form);
-
-    const response = await fetch('/save-receipt', {
-      method: 'POST',
-      body: formData
-    });
-
-    const result = await response.json();
-    document.getElementById('saveMsg').textContent = result.message;
-
-    setTimeout(() => {
-      document.getElementById('saveMsg').textContent = '';
-    }, 3000);
-  });
-</script>
 
 
 </body>

@@ -31,6 +31,15 @@ app.use(express.static('uploads'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Sessions
+const session = require('express-session');
+app.use(session({
+  secret: 'supersecretkns',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
 // Multer setup
 const storage = multer.diskStorage({
   destination: 'uploads/',
@@ -40,7 +49,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Pages
+// Home
 app.get('/', async (req, res) => {
   try {
     const blogs = await prisma.post.findMany({ orderBy: { id: 'desc' } });
@@ -51,18 +60,7 @@ app.get('/', async (req, res) => {
   }
 });
 
-const session = require('express-session');
-
-app.use(session({
-  secret: 'supersecretkns',           // 🔒 use a strong secret in production!
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }           // set to true if using HTTPS
-}));
-
-
-
-
+// Signup
 app.get('/signup', (req, res) => {
   res.render('pages/signup');
 });
@@ -78,22 +76,19 @@ app.post('/signup', async (req, res) => {
         name,
         email,
         password: hashedPassword,
-        age: parseInt(age),        // convert to integer
-        gender,                    // store as string
+        age: parseInt(age),
+        gender,
         supermarket
       }
     });
 
-console.log("🧑 Gender stored in session:", newUser.gender);
+    req.session.user = {
+      id: newUser.id,
+      name: newUser.name,
+      gender: newUser.gender,
+      email: newUser.email
+    };
 
-
-req.session.user = {
-  id: newUser.id,
-  name: newUser.name,
-  gender: newUser.gender, 
-  email: newUser.email
-};
-    // Optional: Store in session or redirect with flash message
     res.redirect('/dashboard');
   } catch (error) {
     console.error("Signup error:", error);
@@ -101,22 +96,58 @@ req.session.user = {
   }
 });
 
-
-app.get('/dashboard', (req, res) => {
- console.log("🧾 Session user:", req.session.user);
+// Dashboard
+app.get('/dashboard', async (req, res) => {
   const user = req.session.user;
+  if (!user) return res.redirect('/login');
 
-  if (!user) return res.redirect('/login'); // optional: protect route
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  res.render('pages/dashboard', {
-    receipt: null,
-    image: null,
-    user
-  });
+  try {
+    const receipts = await prisma.receipt.findMany({
+      where: {
+        userId: user.id,
+        createdAt: { gte: startOfMonth }
+      }
+    });
+
+    const totalSpent = receipts.reduce((sum, r) => sum + r.total, 0);
+
+    const storeCount = {};
+    receipts.forEach(r => {
+      storeCount[r.supplier] = (storeCount[r.supplier] || 0) + 1;
+    });
+
+    const favouriteStore = Object.entries(storeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
+    res.render('pages/dashboard', {
+      receipt: null,
+      image: null,
+      user,
+      overview: {
+        totalSpent,
+        favouriteStore,
+        topCategory: 'Coming Soon 👀'
+      }
+    });
+
+  } catch (err) {
+    console.error('Dashboard query failed:', err);
+    res.render('pages/dashboard', {
+      receipt: null,
+      image: null,
+      user,
+      overview: {
+        totalSpent: 0,
+        favouriteStore: 'N/A',
+        topCategory: 'Coming Soon 👀'
+      }
+    });
+  }
 });
 
-
-// Custom Mindee OCR route with polling for async result
+// Upload Receipt (OCR)
 app.post('/upload', upload.single('receipt'), async (req, res) => {
   try {
     const originalImagePath = path.join(__dirname, req.file.path);
@@ -159,8 +190,6 @@ app.post('/upload', upload.single('receipt'), async (req, res) => {
 
       if (poll.data.document?.inference) {
         prediction = poll.data.document.inference.prediction;
-console.log("🔍 Full Mindee prediction:", JSON.stringify(prediction, null, 2));
-
         break;
       }
 
@@ -171,21 +200,23 @@ console.log("🔍 Full Mindee prediction:", JSON.stringify(prediction, null, 2))
     if (!prediction) throw new Error("Timed out waiting for prediction");
 
     const cleanedReceipt = {
-  supplier_name: prediction.store_name?.value || 'Unknown',
-  total_amount: prediction.total_amount?.value || '?',
-  line_items: prediction.items?.map((item, i) => ({
-    description: item.item_name || '',
-    unit_price: item.item_price || ''
-  })) || []
-};
-
-
-console.log("🔐 Upload session user:", req.session.user);
+      supplier_name: prediction.store_name?.value || 'Unknown',
+      total_amount: prediction.total_amount?.value || '?',
+      line_items: prediction.items?.map(item => ({
+        description: item.item_name || '',
+        unit_price: item.item_price || ''
+      })) || []
+    };
 
     res.render('pages/dashboard', {
       receipt: cleanedReceipt,
       image: req.file.filename,
-      user: req.session.user  // ✅ pass user to the view
+      user: req.session.user,
+      overview: {
+        totalSpent: 0,
+        favouriteStore: 'N/A',
+        topCategory: 'Coming Soon 👀'
+      }
     });
 
   } catch (error) {
@@ -194,12 +225,16 @@ console.log("🔐 Upload session user:", req.session.user);
   }
 });
 
-// Receipt save demo
+// Save Receipt
 app.post('/save-receipt', async (req, res) => {
   const { supplier, total } = req.body;
   const user = req.session.user;
 
   if (!user) return res.redirect('/login');
+  if (!supplier || isNaN(parseFloat(total))) {
+    console.error('❌ Missing supplier or total:', { supplier, total });
+    return res.status(400).send('Missing or invalid data');
+  }
 
   try {
     await prisma.receipt.create({
@@ -210,7 +245,7 @@ app.post('/save-receipt', async (req, res) => {
       }
     });
 
-    res.json({ message: '🧾 Receipt saved successfully!' });
+    res.redirect('/dashboard'); // 👈 auto-return to updated dashboard
 
   } catch (error) {
     console.error('Failed to save receipt:', error);
@@ -218,21 +253,18 @@ app.post('/save-receipt', async (req, res) => {
   }
 });
 
+
+// Login
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user) {
-      return res.status(401).send('Invalid email or password.');
-    }
+    if (!user) return res.status(401).send('Invalid email or password.');
 
     const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).send('Invalid email or password.');
-    }
+    if (!isMatch) return res.status(401).send('Invalid email or password.');
 
     req.session.user = {
       id: user.id,
@@ -241,13 +273,12 @@ app.post('/login', async (req, res) => {
       email: user.email
     };
 
-    return res.redirect('/dashboard');
+    res.redirect('/dashboard');
   } catch (err) {
     console.error('Login error:', err);
-    return res.status(500).send('Something went wrong. Please try again.');
+    res.status(500).send('Something went wrong. Please try again.');
   }
 });
-
 
 // Start server
 app.listen(8080, () => {
