@@ -69,13 +69,11 @@ app.post('/signup', async (req, res) => {
   const { name, age, gender, email, supermarket, password } = req.body;
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword,
+        password, // Store password directly (no bcrypt)
         age: parseInt(age),
         gender,
         supermarket
@@ -95,6 +93,7 @@ app.post('/signup', async (req, res) => {
     res.status(500).json({ message: "Failed to sign up." });
   }
 });
+
 
 // Dashboard
 app.get('/dashboard', async (req, res) => {
@@ -261,24 +260,76 @@ app.post('/login', async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
 
-    if (!user) return res.status(401).send('Invalid email or password.');
+    if (!user) {
+      return res.status(400).send("❌ Email not found.");
+    }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).send('Invalid email or password.');
+    // ✅ Direct comparison now that password is plain text
+    if (user.password !== password) {
+      return res.status(400).send("❌ Incorrect password.");
+    }
 
     req.session.user = {
       id: user.id,
       name: user.name,
-      gender: user.gender,
       email: user.email
     };
 
     res.redirect('/dashboard');
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).send('Something went wrong. Please try again.');
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).send("❌ Something went wrong. Please try again.");
   }
 });
+
+
+app.post('/forgot-password', async (req, res) => {
+  const { email, secret } = req.body;
+
+  if (secret !== 'ilovekns') {
+    return res.status(400).send("❌ Secret phrase incorrect.");
+  }
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) return res.status(404).send("❌ Email not found.");
+
+    // Send email with the password
+    await transporter.sendMail({
+      to: email,
+      subject: "Kiap N'Save Password Recovery",
+      text: `Your original password is: ${user.password}`
+    });
+
+    res.send("✅ Your password has been sent to your email.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("❌ Something went wrong.");
+  }
+});
+const nodemailer = require('nodemailer');
+
+// Create reusable transporter object using the default SMTP transport
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'babymookeymouse@gmail.com',
+    pass: 'jzzv bstt sqhg krzy' // Use App Password if 2FA is on
+  }
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).send("Error logging out");
+    }
+    res.redirect('/'); // Redirect to landing page
+  });
+});
+
+
 
 // Start server
 app.listen(8080, () => {
