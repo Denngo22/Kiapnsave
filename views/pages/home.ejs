@@ -951,7 +951,10 @@
         <form id="loginForm" method="POST" action="/login">
           <input name="email" type="email" placeholder="Email" required />
           <input name="password" type="password" placeholder="Password" required />
-          <a href="#" onclick="showForgotPassword()" style="font-size: 0.9rem; color: #007bff;">Forgot password?</a>
+          <a href="#" onclick="event.preventDefault(); showForgotPassword();" style="font-size: 0.9rem; color: #007bff;">
+  Forgot password?
+</a>
+
           <button type="submit" class="submit-button">Sign In</button>
         </form>
         <p id="loginError" style="color: red; font-size: 0.9rem;"></p>
@@ -1183,6 +1186,17 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 });
 </script>
 
+<script>
+  function showForgotPassword() {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('forgot-section').style.display = 'block';
+  }
+
+  function showLogin() {
+    document.getElementById('forgot-section').style.display = 'none';
+    document.getElementById('login-section').style.display = 'block';
+  }
+</script>
 
 
 
