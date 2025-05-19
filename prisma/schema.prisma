@@ -34,11 +34,24 @@ model User {
   receipts    Receipt[] // 
 }
 model Receipt {
-  id         Int      @id @default(autoincrement())
+  id         Int            @id @default(autoincrement())
   supplier   String
   total      Float
+  discounts  Float?         // NEW: optional discounts
+  date       DateTime?      // NEW: actual receipt date
   imagePath  String?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime       @default(now())
+  user       User           @relation(fields: [userId], references: [id])
   userId     Int
+
+  items      ReceiptItem[]  // NEW: linked items
+}
+
+model ReceiptItem {
+  id         Int      @id @default(autoincrement())
+  name       String
+  category   String?
+  price      Float
+  receipt    Receipt  @relation(fields: [receiptId], references: [id])
+  receiptId  Int
 }

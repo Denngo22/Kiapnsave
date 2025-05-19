@@ -331,6 +331,11 @@ app.get('/logout', (req, res) => {
 
 
 
+// Testing mindee
+app.get('/test-mindee-key', (req, res) => {
+  res.send(`Token starts with: ${process.env.MINDEE_API_KEY?.slice(0, 5) || 'missing'}`);
+});
+
 // Start server
 app.listen(8080, () => {
   console.log('Server running on http://localhost:8080');
