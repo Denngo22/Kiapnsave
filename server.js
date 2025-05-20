@@ -3,36 +3,26 @@ require("dotenv").config();
 
 // Core packages
 const express = require('express');
-const axios = require('axios');
 const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
 const { v4: uuidv4 } = require('uuid');
-const bcrypt = require('bcrypt');
-const FormData = require('form-data');
-
-// Express app
-const app = express();
-
-// Prisma
+const session = require('express-session');
 const { PrismaClient } = require('@prisma/client');
+const Tesseract = require('tesseract.js');
+const OpenAI = require('openai');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const app = express();
 const prisma = new PrismaClient();
 
-// EJS setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
-// Static files
 app.use(express.static(__dirname + '/public'));
 app.use(express.static('uploads'));
-
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Sessions
-const session = require('express-session');
 app.use(session({
   secret: 'supersecretkns',
   resave: false,
@@ -40,7 +30,6 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-// Multer setup
 const storage = multer.diskStorage({
   destination: 'uploads/',
   filename: (req, file, cb) => {
@@ -48,6 +37,148 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage });
+
+// Receipt upload route
+app.post('/upload', upload.single('receipt'), async (req, res) => {
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  try {
+    const originalImagePath = path.join(__dirname, req.file.path);
+    const processedImagePath = path.join(__dirname, 'uploads', `processed-${uuidv4()}.png`);
+
+    await sharp(originalImagePath).grayscale().normalize().threshold(160).toFile(processedImagePath);
+    const { data: { text: ocrText } } = await Tesseract.recognize(processedImagePath, 'eng');
+
+    const chatPrompt = `You are a grocery receipt parser.\n\nHere is the receipt:\n"""\n${ocrText}\n"""\n\nExtract this in JSON:\n{,\n  "supermarket": "FAIRPRICE XTRA",\n  "total": 127.75,\n  "items": [\n    { "item": "Fresh Milk 1L", "category": "Drinks", "price": 4.50 },\n    { "item": "Bananas", "category": "Fruits", "price": 2.30 }\n  ]}`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: 'You are a smart grocery receipt parser.' },
+        { role: 'user', content: chatPrompt }
+      ]
+    });
+
+    const rawContent = response.choices[0].message.content;
+    console.log("🔍 OpenAI raw content:\n", rawContent);
+
+    let jsonText;
+
+const codeBlockMatch = rawContent.match(/```json([\s\S]*?)```/);
+if (codeBlockMatch) {
+  jsonText = codeBlockMatch[1];
+} else {
+  // Fallback: attempt to extract raw object manually
+  const start = rawContent.indexOf('{');
+  const end = rawContent.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error("No JSON object found");
+  jsonText = rawContent.substring(start, end + 1);
+}
+
+const parsed = JSON.parse(jsonText);
+
+
+    const parsedTotal = parseFloat((parsed.total || parsed.Total || '0').toString().replace(/[^\d.]/g, ''));
+    const totalDiscount = Array.isArray(parsed.discounts)
+      ? parsed.discounts.reduce((sum, d) => sum + (typeof d.amount === 'number' ? d.amount : 0), 0)
+      : (typeof parsed.discounts === 'number' ? parsed.discounts : 0);
+
+    const itemsRaw = parsed.items || parsed.Items || [];
+    const itemsArray = Array.isArray(itemsRaw)
+      ? itemsRaw.map(i => ({
+          name: i.item || i.Item || 'Unnamed',
+          category: i.category || 'others',
+          price: parseFloat(i.total_price || i.price || i.Price || 0)
+        })).filter(i => !isNaN(i.price))
+      : [];
+
+    const receiptData = {
+      userId: user.id,
+      supplier: parsed.supermarket || parsed.store || parsed.Company || 'Unknown',
+      total: isNaN(parsedTotal) ? 0 : parsedTotal,
+      discounts: totalDiscount,
+      date: parsed.date ? new Date(parsed.date) : new Date(),
+      imagePath: req.file.filename,
+      items: {
+        create: itemsArray
+      }
+    };
+
+    await prisma.receipt.create({ data: receiptData });
+
+    return res.render('pages/dashboard', {
+  user,
+  image: req.file.filename,
+  receipt: {
+    supplier_name: receiptData.supplier,
+    total_amount: receiptData.total,
+    line_items: itemsArray.map(item => ({
+      description: item.name,
+      unit_price: item.price,
+      category: item.category
+    }))
+  },
+  overview: {
+    totalSpent: 0,
+    favouriteStore: 'N/A',
+    topCategory: 'Coming Soon 👀'
+  }
+});
+
+
+  } catch (error) {
+    console.error("Parsing or upload failed:", error);
+    return res.render('pages/dashboard', {
+      user,
+      receipt: null,
+      image: req.file?.filename || null,
+      overview: {
+        totalSpent: 0,
+        favouriteStore: 'N/A',
+        topCategory: 'Coming Soon 👀'
+      }
+    });
+  }
+});
+
+
+
+// Save Receipt
+app.post('/save-receipt', async (req, res) => {
+  const { supplier, total, items = [] } = req.body;
+  const user = req.session.user;
+
+  if (!user) return res.redirect('/login');
+  if (!supplier || isNaN(parseFloat(total))) {
+    console.error('❌ Missing supplier or total:', { supplier, total });
+    return res.status(400).send('Missing or invalid data');
+  }
+
+  try {
+    await prisma.receipt.create({
+      data: {
+        supplier,
+        total: parseFloat(total),
+        userId: user.id,
+        items: {
+          create: Array.isArray(items)
+            ? items.map(i => ({
+                name: i.description,
+                category: i.category || 'others',
+                price: parseFloat(i.unit_price)
+              }))
+            : []
+        }
+      }
+    });
+
+    res.redirect('/dashboard');
+  } catch (error) {
+    console.error('Failed to save receipt:', error);
+    res.status(500).send('Error saving receipt.');
+  }
+});
 
 // Home
 app.get('/', async (req, res) => {
@@ -94,163 +225,6 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-
-// Dashboard
-app.get('/dashboard', async (req, res) => {
-  const user = req.session.user;
-  if (!user) return res.redirect('/login');
-
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  try {
-    const receipts = await prisma.receipt.findMany({
-      where: {
-        userId: user.id,
-        createdAt: { gte: startOfMonth }
-      }
-    });
-
-    const totalSpent = receipts.reduce((sum, r) => sum + r.total, 0);
-
-    const storeCount = {};
-    receipts.forEach(r => {
-      storeCount[r.supplier] = (storeCount[r.supplier] || 0) + 1;
-    });
-
-    const favouriteStore = Object.entries(storeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
-
-    res.render('pages/dashboard', {
-      receipt: null,
-      image: null,
-      user,
-      overview: {
-        totalSpent,
-        favouriteStore,
-        topCategory: 'Coming Soon 👀'
-      }
-    });
-
-  } catch (err) {
-    console.error('Dashboard query failed:', err);
-    res.render('pages/dashboard', {
-      receipt: null,
-      image: null,
-      user,
-      overview: {
-        totalSpent: 0,
-        favouriteStore: 'N/A',
-        topCategory: 'Coming Soon 👀'
-      }
-    });
-  }
-});
-
-// Upload Receipt (OCR)
-app.post('/upload', upload.single('receipt'), async (req, res) => {
-  try {
-    const originalImagePath = path.join(__dirname, req.file.path);
-    const processedImagePath = path.join(__dirname, 'uploads', `processed-${uuidv4()}.png`);
-
-    await sharp(originalImagePath)
-      .grayscale()
-      .normalize()
-      .threshold(160)
-      .toFile(processedImagePath);
-
-    const form = new FormData();
-    form.append('document', fs.createReadStream(processedImagePath));
-
-    const initialResponse = await axios.post(
-      'https://api.mindee.net/v1/products/mookey/receipts/v1/predict_async',
-      form,
-      {
-        headers: {
-          Authorization: `Token ${process.env.MINDEE_API_KEY}`,
-          ...form.getHeaders()
-        }
-      }
-    );
-
-    const jobId = initialResponse.data.job?.id;
-    if (!jobId) throw new Error("Mindee response missing job.id");
-
-    const pollingUrl = `https://api.mindee.net/v1/products/mookey/receipts/v1/documents/queue/${jobId}`;
-
-    let prediction = null;
-    let attempts = 0;
-
-    while (attempts < 10) {
-      const poll = await axios.get(pollingUrl, {
-        headers: {
-          Authorization: `Token ${process.env.MINDEE_API_KEY}`
-        }
-      });
-
-      if (poll.data.document?.inference) {
-        prediction = poll.data.document.inference.prediction;
-        break;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      attempts++;
-    }
-
-    if (!prediction) throw new Error("Timed out waiting for prediction");
-
-    const cleanedReceipt = {
-      supplier_name: prediction.store_name?.value || 'Unknown',
-      total_amount: prediction.total_amount?.value || '?',
-      line_items: prediction.items?.map(item => ({
-        description: item.item_name || '',
-        unit_price: item.item_price || ''
-      })) || []
-    };
-
-    res.render('pages/dashboard', {
-      receipt: cleanedReceipt,
-      image: req.file.filename,
-      user: req.session.user,
-      overview: {
-        totalSpent: 0,
-        favouriteStore: 'N/A',
-        topCategory: 'Coming Soon 👀'
-      }
-    });
-
-  } catch (error) {
-    console.error('Mindee OCR failed:', error.response?.data || error.message);
-    res.send(`<pre>${JSON.stringify(error.response?.data || error.message, null, 2)}</pre>`);
-  }
-});
-
-// Save Receipt
-app.post('/save-receipt', async (req, res) => {
-  const { supplier, total } = req.body;
-  const user = req.session.user;
-
-  if (!user) return res.redirect('/login');
-  if (!supplier || isNaN(parseFloat(total))) {
-    console.error('❌ Missing supplier or total:', { supplier, total });
-    return res.status(400).send('Missing or invalid data');
-  }
-
-  try {
-    await prisma.receipt.create({
-      data: {
-        supplier,
-        total: parseFloat(total),
-        userId: user.id
-      }
-    });
-
-    res.redirect('/dashboard'); // 👈 auto-return to updated dashboard
-
-  } catch (error) {
-    console.error('Failed to save receipt:', error);
-    res.status(500).send('Error saving receipt.');
-  }
-});
 
 
 // Login
@@ -329,11 +303,55 @@ app.get('/logout', (req, res) => {
   });
 });
 
+// Dashboard
+app.get('/dashboard', async (req, res) => {
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
 
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-// Testing mindee
-app.get('/test-mindee-key', (req, res) => {
-  res.send(`Token starts with: ${process.env.MINDEE_API_KEY?.slice(0, 5) || 'missing'}`);
+  try {
+    const receipts = await prisma.receipt.findMany({
+      where: {
+        userId: user.id,
+        createdAt: { gte: startOfMonth }
+      }
+    });
+
+    const totalSpent = receipts.reduce((sum, r) => sum + r.total, 0);
+
+    const storeCount = {};
+    receipts.forEach(r => {
+      storeCount[r.supplier] = (storeCount[r.supplier] || 0) + 1;
+    });
+
+    const favouriteStore = Object.entries(storeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
+    res.render('pages/dashboard', {
+      receipt: null,
+      image: null,
+      user,
+      overview: {
+        totalSpent,
+        favouriteStore,
+        topCategory: 'Coming Soon 👀'
+      }
+    });
+
+  } catch (err) {
+    console.error('Dashboard query failed:', err);
+    res.render('pages/dashboard', {
+      receipt: null,
+      image: null,
+      user,
+      overview: {
+        totalSpent: 0,
+        favouriteStore: 'N/A',
+        topCategory: 'Coming Soon 👀'
+      }
+    });
+  }
 });
 
 // Start server
