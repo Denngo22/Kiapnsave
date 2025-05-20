@@ -614,15 +614,24 @@
           <input type="number" step="0.01" name="items[<%= index %>][unit_price]" value="<%= item.unit_price || '' %>" class="<%= !item.unit_price ? 'warning' : '' %>">
         </td>
         <td>
-          <select name="items[<%= index %>][category]">
-            <option value="">Select Category</option>
-            <option value="vegetables">Vegetables</option>
-            <option value="meat">Meat</option>
-            <option value="seafood">Seafood</option>
-            <option value="snacks">Snacks</option>
-            <option value="beverages">Beverages</option>
-            <option value="others">Others</option>
-          </select>
+         <select name="items[<%= index %>][category]">
+  <option value="">Select Category</option>
+  <option value="Staple" <%= item.category === 'Staple' ? 'selected' : '' %>>Staple</option>
+  <option value="Fruits" <%= item.category === 'Fruits' ? 'selected' : '' %>>Fruits</option>
+  <option value="Vegetables" <%= item.category === 'Vegetables' ? 'selected' : '' %>>Vegetables</option>
+  <option value="Meat" <%= item.category === 'Meat' ? 'selected' : '' %>>Meat</option>
+  <option value="Seafood" <%= item.category === 'Seafood' ? 'selected' : '' %>>Seafood</option>
+  <option value="Dairy" <%= item.category === 'Dairy' ? 'selected' : '' %>>Dairy</option>
+  <option value="Bakery" <%= item.category === 'Bakery' ? 'selected' : '' %>>Bakery</option>
+  <option value="Eggs" <%= item.category === 'Eggs' ? 'selected' : '' %>>Eggs</option>
+  <option value="Snacks" <%= item.category === 'Snacks' ? 'selected' : '' %>>Snacks</option>
+  <option value="Beverages" <%= item.category === 'Beverages' ? 'selected' : '' %>>Beverages</option>
+  <option value="Condiments" <%= item.category === 'Condiments' ? 'selected' : '' %>>Condiments</option>
+  <option value="Household" <%= item.category === 'Household' ? 'selected' : '' %>>Household</option>
+  <option value="Toiletries" <%= item.category === 'Toiletries' ? 'selected' : '' %>>Toiletries</option>
+  <option value="Others" <%= item.category === 'Others' ? 'selected' : '' %>>Others</option>
+</select>
+
         </td>
         <td class="action-buttons">
           <button type="button" onclick="this.closest('tr').remove()">🗑️</button>

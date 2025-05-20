@@ -50,7 +50,35 @@ app.post('/upload', upload.single('receipt'), async (req, res) => {
     await sharp(originalImagePath).grayscale().normalize().threshold(160).toFile(processedImagePath);
     const { data: { text: ocrText } } = await Tesseract.recognize(processedImagePath, 'eng');
 
-    const chatPrompt = `You are a grocery receipt parser.\n\nHere is the receipt:\n"""\n${ocrText}\n"""\n\nExtract this in JSON:\n{,\n  "supermarket": "FAIRPRICE XTRA",\n  "total": 127.75,\n  "items": [\n    { "item": "Fresh Milk 1L", "category": "Drinks", "price": 4.50 },\n    { "item": "Bananas", "category": "Fruits", "price": 2.30 }\n  ]}`;
+    const chatPrompt = `
+You are a smart grocery receipt parser.
+
+Here is a scanned receipt:
+"""
+${ocrText}
+"""
+
+Return JSON in this format:
+
+{
+  "supermarket": "FAIRPRICE XTRA",
+  "total": 127.75,
+  "items": [
+    { "original_line": "B FRESH FISH BALL 230", "category": "Seafood", "price": 3.15 },
+    { "original_line": "C LG ONION RED700G", "category": "Vegetables", "price": 1.85 }
+  ],
+  "discounts": [
+    { "description": "Promo discount", "amount": 3.25 }
+  ]
+}
+
+Guidelines:
+- DO NOT rename items. Use the original text from the receipt as-is under "original_line".
+- You are only allowed to suggest a **category** for each line.
+- Use these categories only: Fruits, Staple, Vegetables, Meat, Seafood, Dairy, Eggs, Snacks, Beverages, Condiments, Household, Toiletries, Others.
+- Estimate and include a "discounts" array if total < sum of items.
+Return only JSON (no extra commentary or markdown).
+`;
 
     const response = await openai.chat.completions.create({
       model: 'gpt-4',
@@ -87,7 +115,7 @@ const parsed = JSON.parse(jsonText);
     const itemsRaw = parsed.items || parsed.Items || [];
     const itemsArray = Array.isArray(itemsRaw)
       ? itemsRaw.map(i => ({
-          name: i.item || i.Item || 'Unnamed',
+          name: i.original_line || i.item || 'Unnamed',
           category: i.category || 'others',
           price: parseFloat(i.total_price || i.price || i.Price || 0)
         })).filter(i => !isNaN(i.price))
