@@ -380,18 +380,63 @@
     background-color: #fff8c6;
   }
   </style>
-  <script>
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.getElementById(tab + '-tab').classList.add('active');
-      document.getElementById(tab + '-content').classList.add('active');
+ <script>
+  function initTrendChart() {
+    const canvas = document.getElementById('trendChart');
+    if (!canvas) {
+      console.warn('⚠️ trendChart canvas not found!');
+      return;
     }
 
-    window.onload = () => switchTab('overview');
-  </script>
+    const ctx = canvas.getContext('2d'); // ✅ <— this line goes here
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    console.log("📈 Trend Labels:", trendLabels);
+    console.log("📊 Trend Data:", trendData);
+
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: trendLabels,
+        datasets: [{
+          label: 'Monthly Spending ($)',
+          data: trendData,
+          borderColor: 'orange',
+          backgroundColor: 'rgba(255,165,0,0.1)',
+          tension: 0.3,
+          fill: true,
+          pointBackgroundColor: 'orange'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: true },
+          title: {
+            display: true,
+            text: 'Spending Trend (This Year)',
+            font: { size: 18 },
+            color: '#333'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: val => '$' + val
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Trigger it only when Overview tab is loaded
+  window.onload = () => switchTab('overview');
+</script>
+
+
+
+  
 </head>
 <body>
   <header>
@@ -437,15 +482,42 @@
 
 <div class="info-box" style="border-color: #2ecc71">
   <h3 style="color: #2ecc71">Top Category</h3>
-  <div class="value">WIP</div>
-  <p style="color: gray;">based on item breakdown</p>
+  <div class="value">
+    <%= overview.topCategory %> — $<%= overview.topCategoryAmount %>
+  </div>
+  <p style="color: gray;">(Based on total spending this month)</p>
 </div>
+
 
 <div class="info-box" style="border-color: #9b59b6">
   <h3 style="color: #9b59b6">Favourite Store</h3>
   <div class="value"><%= overview.favouriteStore %></div>
-  <p style="color: gray;">(most visited)</p>
+  <p style="color: gray;">(Most visited this month)</p>
 </div>
+
+
+<!-- Chart.js library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Inject trend data -->
+<script id="trend-data" type="application/json">
+  {
+    "labels": <%- JSON.stringify(Object.keys(spendingTrend)) %>,
+    "data": <%- JSON.stringify(Object.values(spendingTrend)) %>
+  }
+</script>
+
+<script>
+  const parsed = JSON.parse(document.getElementById('trend-data').textContent);
+  const trendLabels = parsed.labels;
+  const trendData = parsed.data;
+
+    // 🔍 Debug output
+  console.log("📈 Trend Labels:", trendLabels);
+  console.log("📊 Trend Data:", trendData);
+</script>
+
+
 
 
   <!-- Spending Trend Chart -->
@@ -591,7 +663,7 @@
 
 <form action="/save-receipt" method="POST">
   <input type="hidden" name="imagePath" value="<%= image %>" />
-
+<input type="hidden" name="processedImage" value="<%= processedImage %>" />
   <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
     <div>
       <label for="supplier">Supermarket:</label><br />
@@ -702,57 +774,18 @@
   let chartInitialized = false;
 
   function switchTab(tab) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    document.getElementById(tab + '-tab').classList.add('active');
-    document.getElementById(tab + '-content').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById(tab + '-tab')?.classList.add('active');
+  document.getElementById(tab + '-content')?.classList.add('active');
 
-    if (tab === 'overview' && !chartInitialized) {
-      setTimeout(initTrendChart, 100);
-      chartInitialized = true;
-    }
+  if (tab === 'overview' && !window.chartInitialized) {
+    setTimeout(initTrendChart, 100); // give DOM time to render
+    window.chartInitialized = true;
   }
+}
 
-  function initTrendChart() {
-    const canvas = document.getElementById('trendChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
-        datasets: [{
-          label: 'Monthly Spending ($)',
-          data: [950, 1020, 1150, 1320, 1248],
-          borderColor: 'orange',
-          backgroundColor: 'rgba(255,165,0,0.1)',
-          tension: 0.3,
-          fill: true,
-          pointBackgroundColor: 'orange'
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { display: true },
-          title: {
-            display: true,
-            text: 'Spending Trend',
-            font: { size: 18 },
-            color: '#333'
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: val => '$' + val
-            }
-          }
-        }
-      }
-    });
-  }
+ 
 
   window.onload = () => switchTab('overview');
 </script>

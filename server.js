@@ -40,12 +40,15 @@ const upload = multer({ storage });
 
 // Receipt upload route
 app.post('/upload', upload.single('receipt'), async (req, res) => {
+  const spendingTrend = { "Prior": 0 };
+
   const user = req.session.user;
   if (!user) return res.redirect('/login');
 
   try {
     const originalImagePath = path.join(__dirname, req.file.path);
     const processedImagePath = path.join(__dirname, 'uploads', `processed-${uuidv4()}.png`);
+const processedFilename = path.basename(processedImagePath);
 
     await sharp(originalImagePath).grayscale().normalize().threshold(160).toFile(processedImagePath);
     const { data: { text: ocrText } } = await Tesseract.recognize(processedImagePath, 'eng');
@@ -142,15 +145,74 @@ const receiptData = {
   }
 };
 
+const now = new Date();
+const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+const receipts = await prisma.receipt.findMany({
+  where: {
+    userId: user.id,
+    createdAt: { gte: startOfMonth }
+  }
+});
+
+const totalSpent = receipts.reduce((sum, r) => sum + r.total, 0);
+
+const storeCount = {};
+receipts.forEach(r => {
+  storeCount[r.supplier] = (storeCount[r.supplier] || 0) + 1;
+});
+const favouriteStore = Object.entries(storeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
+
+const receiptIds = receipts.map(r => r.id);
+const items = await prisma.receiptItem.findMany({
+  where: { receiptId: { in: receiptIds } }
+});
+
+const categoryTotals = {};
+items.forEach(item => {
+  const cat = item.category?.toLowerCase() || 'others';
+  categoryTotals[cat] = (categoryTotals[cat] || 0) + item.price;
+});
+const topEntry = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0];
+const topCategory = topEntry?.[0] || 'N/A';
+const topCategoryAmount = topEntry?.[1] || 0;
+
+const monthlyTotals = await prisma.receipt.groupBy({
+  by: ['date'],
+  where: { userId: user.id },
+  _sum: { total: true },
+  orderBy: { date: 'asc' }
+});
+
+const spendingTrend = {};
+monthlyTotals.forEach(entry => {
+  const rawDate = entry.date instanceof Date ? entry.date : new Date(entry.date);
+  if (isNaN(rawDate)) return; // skip invalid dates
+
+  const label = rawDate.toLocaleString('default', { month: 'short', year: 'numeric' }); // e.g. "May 2025"
+  spendingTrend[label] = (spendingTrend[label] || 0) + entry._sum.total;
+});
+if (Object.keys(spendingTrend).length < 2) {
+  const existing = { ...spendingTrend };
+  Object.keys(spendingTrend).forEach(k => delete spendingTrend[k]);
+  spendingTrend["Prior"] = 0;
+  for (const key in existing) {
+    spendingTrend[key] = existing[key];
+  }
+}
+
+
+
 
 return res.render('pages/dashboard', {
   user,
   image: req.file.filename,
+  processedImage: processedFilename,
   receipt: {
     supplier_name: receiptData.supplier,
     total_amount: receiptData.total,
     total_discount: totalDiscount,
-    date: receiptDate.toISOString().split('T')[0], // format for input[type="date"]
+    date: receiptDate.toISOString().split('T')[0],
     line_items: itemsArray.map(item => ({
       description: item.name,
       unit_price: item.price,
@@ -158,10 +220,13 @@ return res.render('pages/dashboard', {
     }))
   },
   overview: {
-    totalSpent: 0,
-    favouriteStore: 'N/A',
-    topCategory: 'Coming Soon 👀'
-  }
+  totalSpent,
+  favouriteStore,
+  topCategory: topCategory.charAt(0).toUpperCase() + topCategory.slice(1),
+  topCategoryAmount: topCategoryAmount.toFixed(2)
+},
+
+  spendingTrend // ✅ Add this line
 });
 
 
@@ -169,15 +234,29 @@ return res.render('pages/dashboard', {
   } catch (error) {
     console.error("Parsing or upload failed:", error);
     return res.render('pages/dashboard', {
-      user,
-      receipt: null,
-      image: req.file?.filename || null,
-      overview: {
-        totalSpent: 0,
-        favouriteStore: 'N/A',
-        topCategory: 'Coming Soon 👀'
-      }
-    });
+  receipt: {
+    supplier_name: receiptData.supplier,
+    total_amount: receiptData.total,
+    total_discount: totalDiscount,
+    date: receiptDate.toISOString().split('T')[0],
+    line_items: itemsArray.map(item => ({
+      description: item.name,
+      unit_price: item.price,
+      category: item.category
+    }))
+  },
+  image: req.file.filename,
+  processedImage: processedFilename,
+  user,
+  overview: {
+    totalSpent,
+    favouriteStore,
+    topCategory: topCategory.charAt(0).toUpperCase() + topCategory.slice(1),
+    topCategoryAmount: topCategoryAmount.toFixed(2)
+  },
+  spendingTrend
+});
+
   }
 });
 
@@ -185,7 +264,7 @@ return res.render('pages/dashboard', {
 
 // Save Receipt
 app.post('/save-receipt', async (req, res) => {
-  const { supplier, total, discount, date, items = [], imagePath } = req.body;
+  const { supplier, total, discount, date, items = [], imagePath, processedImage } = req.body;
   const user = req.session.user;
   if (!user) return res.redirect('/login');
 
@@ -216,6 +295,15 @@ app.post('/save-receipt', async (req, res) => {
         else console.log('🧼 Image deleted:', imagePath);
       });
     }
+
+    // Delete processed
+if (processedImage) {
+  const fullProcessedPath = path.join(__dirname, 'uploads', processedImage);
+  fs.unlink(fullProcessedPath, err => {
+    if (err) console.error('❌ Failed to delete processed image:', err);
+    else console.log('🧼 Deleted processed image:', processedImage);
+  });
+}
 
 
     res.redirect('/dashboard');
@@ -374,30 +462,83 @@ app.get('/dashboard', async (req, res) => {
 
     const favouriteStore = Object.entries(storeCount).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A';
 
+const thisMonthReceiptIds = receipts.map(r => r.id);
+
+const items = await prisma.receiptItem.findMany({
+  where: {
+    receiptId: { in: thisMonthReceiptIds }
+  }
+});
+
+const categoryTotals = {};
+
+items.forEach(item => {
+  const category = item.category?.toLowerCase() || 'others';
+  categoryTotals[category] = (categoryTotals[category] || 0) + item.price;
+});
+
+const topEntry = Object.entries(categoryTotals)
+  .sort((a, b) => b[1] - a[1])[0];
+
+const topCategory = topEntry?.[0] || 'N/A';
+const topCategoryAmount = topEntry?.[1] || 0;
+
+const monthlyTotals = await prisma.receipt.groupBy({
+  by: ['date'],
+  where: { userId: user.id },
+  _sum: { total: true },
+  orderBy: { date: 'asc' }
+});
+
+const spendingTrend = {};
+monthlyTotals.forEach(entry => {
+  const rawDate = entry.date instanceof Date ? entry.date : new Date(entry.date);
+  if (isNaN(rawDate)) return; // skip invalid dates
+
+  const label = rawDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+  spendingTrend[label] = (spendingTrend[label] || 0) + entry._sum.total;
+});
+// Add fallback if only one data point (Chart.js needs at least 2)
+if (Object.keys(spendingTrend).length < 2) {
+  // Insert Prior: 0 at the beginning
+  const existing = { ...spendingTrend };
+  Object.keys(spendingTrend).forEach(k => delete spendingTrend[k]); // clear
+  spendingTrend["Prior"] = 0;
+  for (const key in existing) {
+    spendingTrend[key] = existing[key];
+  }
+}
+
+
     res.render('pages/dashboard', {
       receipt: null,
       image: null,
       user,
       overview: {
-        totalSpent,
-        favouriteStore,
-        topCategory: 'Coming Soon 👀'
-      }
+    totalSpent,
+    favouriteStore,
+    topCategory: topCategory.charAt(0).toUpperCase() + topCategory.slice(1),
+    topCategoryAmount: topCategoryAmount.toFixed(2)
+  },
+   spendingTrend // 👈 include this!
     });
 
   } catch (err) {
-    console.error('Dashboard query failed:', err);
-    res.render('pages/dashboard', {
-      receipt: null,
-      image: null,
-      user,
-      overview: {
-        totalSpent: 0,
-        favouriteStore: 'N/A',
-        topCategory: 'Coming Soon 👀'
-      }
-    });
-  }
+  console.error('Dashboard query failed:', err);
+  res.render('pages/dashboard', {
+    receipt: null,
+    image: null,
+    user,
+    overview: {
+      totalSpent: 0,
+      favouriteStore: 'N/A',
+      topCategory: 'Coming Soon 👀',
+      topCategoryAmount: '0.00'
+    },
+    spendingTrend: {} // 🧩 THIS LINE is required to prevent EJS error
+  });
+}
+
 });
 
 // Start server
