@@ -142,7 +142,6 @@ const receiptData = {
   }
 };
 
-await prisma.receipt.create({ data: receiptData });
 
 return res.render('pages/dashboard', {
   user,
@@ -186,7 +185,7 @@ return res.render('pages/dashboard', {
 
 // Save Receipt
 app.post('/save-receipt', async (req, res) => {
-  const { supplier, total, discount, date, items = [] } = req.body;
+  const { supplier, total, discount, date, items = [], imagePath } = req.body;
   const user = req.session.user;
   if (!user) return res.redirect('/login');
 
@@ -209,6 +208,15 @@ app.post('/save-receipt', async (req, res) => {
         }
       }
     });
+    // 🧹 Delete uploaded image from disk
+    if (imagePath) {
+      const fullPath = path.join(__dirname, 'uploads', imagePath);
+      fs.unlink(fullPath, (err) => {
+        if (err) console.error('Failed to delete image:', err);
+        else console.log('🧼 Image deleted:', imagePath);
+      });
+    }
+
 
     res.redirect('/dashboard');
   } catch (error) {

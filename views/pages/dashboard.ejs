@@ -590,6 +590,8 @@
           <h3>Receipt Details</h3>
 
 <form action="/save-receipt" method="POST">
+  <input type="hidden" name="imagePath" value="<%= image %>" />
+
   <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
     <div>
       <label for="supplier">Supermarket:</label><br />
