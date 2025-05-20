@@ -376,7 +376,9 @@
   background: orange;
   color: white;
 }
-
+.uncertain-row {
+    background-color: #fff8c6;
+  }
   </style>
   <script>
     function switchTab(tab) {
@@ -586,13 +588,30 @@
           <div class="success-message">✅ Receipt uploaded and scanned successfully!</div>
 
           <h3>Receipt Details</h3>
-          <p><strong>Supplier:</strong> <%= receipt.supplier_name || "Unknown" %></p>
-<p><strong>Total Amount:</strong> $<%= receipt.total_amount || "?" %></p>
 
+<form action="/save-receipt" method="POST">
+  <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+    <div>
+      <label for="supplier">Supermarket:</label><br />
+      <input type="text" id="supplier" name="supplier" value="<%= receipt.supplier_name || '' %>" required />
+    </div>
 
-          <form action="/save-receipt" method="POST">
-            <input type="hidden" name="supplier" value="<%= receipt.supplier_name || '' %>" />
-<input type="hidden" name="total" value="<%= receipt.total_amount || '' %>" />
+    <div>
+      <label for="date">Date:</label><br />
+      <input type="date" id="date" name="date" value="<%= receipt.date || '' %>" required />
+    </div>
+
+    <div>
+      <label for="total">Total Amount ($):</label><br />
+      <input type="number" step="0.01" id="total" name="total" value="<%= receipt.total_amount || '' %>" required />
+    </div>
+
+    <div>
+      <label for="discount">Total Discount ($):</label><br />
+      <input type="number" step="0.01" id="discount" name="discount" value="<%= receipt.total_discount || '' %>" />
+    </div>
+  </div>
+
 
 
             <table>
@@ -605,8 +624,10 @@
     </tr>
   </thead>
   <tbody id="line-items">
-    <% receipt.line_items.forEach((item, index) => { %>
-      <tr>
+  <% receipt.line_items.forEach((item, index) => { %>
+  <% const isUncertain = item.category === 'Others' || !item.category; %>
+<tr class="<%= isUncertain ? 'uncertain-row' : '' %>">
+
         <td>
           <input type="text" name="items[<%= index %>][description]" value="<%= item.description || '' %>" class="<%= (!item.description || item.description.length < 2) ? 'warning' : '' %>">
         </td>
@@ -631,7 +652,9 @@
   <option value="Toiletries" <%= item.category === 'Toiletries' ? 'selected' : '' %>>Toiletries</option>
   <option value="Others" <%= item.category === 'Others' ? 'selected' : '' %>>Others</option>
 </select>
-
+<% if (item.category === 'Others' || !item.category) { %>
+    <span title="Not sure about this" style="color: #e67e22; font-weight: bold;">❗</span>
+  <% } %>
         </td>
         <td class="action-buttons">
           <button type="button" onclick="this.closest('tr').remove()">🗑️</button>

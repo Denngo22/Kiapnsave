@@ -108,39 +108,50 @@ const parsed = JSON.parse(jsonText);
 
 
     const parsedTotal = parseFloat((parsed.total || parsed.Total || '0').toString().replace(/[^\d.]/g, ''));
-    const totalDiscount = Array.isArray(parsed.discounts)
-      ? parsed.discounts.reduce((sum, d) => sum + (typeof d.amount === 'number' ? d.amount : 0), 0)
-      : (typeof parsed.discounts === 'number' ? parsed.discounts : 0);
 
-    const itemsRaw = parsed.items || parsed.Items || [];
-    const itemsArray = Array.isArray(itemsRaw)
-      ? itemsRaw.map(i => ({
-          name: i.original_line || i.item || 'Unnamed',
-          category: i.category || 'others',
-          price: parseFloat(i.total_price || i.price || i.Price || 0)
-        })).filter(i => !isNaN(i.price))
-      : [];
+const itemsRaw = parsed.items || parsed.Items || [];
+const itemsArray = Array.isArray(itemsRaw)
+  ? itemsRaw.map(i => ({
+      name: i.original_line || i.item || 'Unnamed',
+      category: i.category || 'Others',
+      price: parseFloat(i.total_price || i.price || i.Price || 0)
+    })).filter(i => !isNaN(i.price))
+  : [];
 
-    const receiptData = {
-      userId: user.id,
-      supplier: parsed.supermarket || parsed.store || parsed.Company || 'Unknown',
-      total: isNaN(parsedTotal) ? 0 : parsedTotal,
-      discounts: totalDiscount,
-      date: parsed.date ? new Date(parsed.date) : new Date(),
-      imagePath: req.file.filename,
-      items: {
-        create: itemsArray
-      }
-    };
+const itemSum = itemsArray.reduce((sum, i) => sum + (i.price || 0), 0);
 
-    await prisma.receipt.create({ data: receiptData });
+// Compute discount (from OpenAI or fallback)
+let totalDiscount = 0;
+if (Array.isArray(parsed.discounts)) {
+  totalDiscount = parsed.discounts.reduce((sum, d) => sum + Math.abs(parseFloat(d.amount || 0)), 0);
+} else if (itemSum > parsedTotal) {
+  totalDiscount = parseFloat((itemSum - parsedTotal).toFixed(2));
+}
 
-    return res.render('pages/dashboard', {
+const receiptDate = parsed.date ? new Date(parsed.date) : new Date();
+
+const receiptData = {
+  userId: user.id,
+  supplier: parsed.supermarket || parsed.store || parsed.Company || 'Unknown',
+  total: isNaN(parsedTotal) ? 0 : parsedTotal,
+  discounts: totalDiscount,
+  date: receiptDate,
+  imagePath: req.file.filename,
+  items: {
+    create: itemsArray
+  }
+};
+
+await prisma.receipt.create({ data: receiptData });
+
+return res.render('pages/dashboard', {
   user,
   image: req.file.filename,
   receipt: {
     supplier_name: receiptData.supplier,
     total_amount: receiptData.total,
+    total_discount: totalDiscount,
+    date: receiptDate.toISOString().split('T')[0], // format for input[type="date"]
     line_items: itemsArray.map(item => ({
       description: item.name,
       unit_price: item.price,
@@ -153,6 +164,7 @@ const parsed = JSON.parse(jsonText);
     topCategory: 'Coming Soon 👀'
   }
 });
+
 
 
   } catch (error) {
@@ -174,26 +186,23 @@ const parsed = JSON.parse(jsonText);
 
 // Save Receipt
 app.post('/save-receipt', async (req, res) => {
-  const { supplier, total, items = [] } = req.body;
+  const { supplier, total, discount, date, items = [] } = req.body;
   const user = req.session.user;
-
   if (!user) return res.redirect('/login');
-  if (!supplier || isNaN(parseFloat(total))) {
-    console.error('❌ Missing supplier or total:', { supplier, total });
-    return res.status(400).send('Missing or invalid data');
-  }
 
   try {
     await prisma.receipt.create({
       data: {
         supplier,
         total: parseFloat(total),
+        discounts: parseFloat(discount || 0),
+        date: new Date(date),
         userId: user.id,
         items: {
           create: Array.isArray(items)
             ? items.map(i => ({
                 name: i.description,
-                category: i.category || 'others',
+                category: i.category || 'Others',
                 price: parseFloat(i.unit_price)
               }))
             : []
@@ -207,6 +216,7 @@ app.post('/save-receipt', async (req, res) => {
     res.status(500).send('Error saving receipt.');
   }
 });
+
 
 // Home
 app.get('/', async (req, res) => {
