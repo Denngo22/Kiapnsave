@@ -32,6 +32,12 @@ model User {
   createdAt   DateTime  @default(now())
 
   receipts    Receipt[] // 
+  
+// ADD THESE:
+  sent     Friend[] @relation("SentRequests")
+  received Friend[] @relation("ReceivedRequests")
+
+avatar    Int?     //
 }
 model Receipt {
   id         Int            @id @default(autoincrement())
@@ -55,4 +61,15 @@ model ReceiptItem {
   receiptId  Int
   receipt Receipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
   
+}
+model Friend {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  friendId  Int
+  createdAt DateTime @default(now())
+
+  user   User @relation("SentRequests", fields: [userId], references: [id])
+  friend User @relation("ReceivedRequests", fields: [friendId], references: [id])
+
+  @@unique([userId, friendId])
 }

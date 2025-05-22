@@ -452,15 +452,12 @@
 
 
     <div style="display: flex; align-items: center; gap: 1rem;">
-<%
-  const rawGender = user.gender?.trim().toLowerCase();
-  const prefix = rawGender === 'female' ? 'Aunty' : rawGender === 'male' ? 'Uncle' : '';
-  const nameCapitalized = user.name.charAt(0).toUpperCase() + user.name.slice(1);
-%>
-
-<span style="font-size: 1rem; font-weight: 500; color: #333;">
-  👋 Hi again, <strong id="username"><%= prefix %> <%= nameCapitalized %>!</strong>
-</span>
+<% const rawGender = user.gender?.trim().toLowerCase();
+         const prefix = rawGender === 'female' ? 'Aunty' : rawGender === 'male' ? 'Uncle' : '';
+         const nameCapitalized = user.name.charAt(0).toUpperCase() + user.name.slice(1); %>
+      <span style="font-size: 1rem; font-weight: 500; color: #333;">
+        👋 Hi again, <strong id="username"><%= prefix %> <%= nameCapitalized %>!</strong>
+      </span>
 
   <button class="signout" onclick="location.href='/logout'" style="margin: 0;">Sign Out</button>
 </div>
@@ -525,81 +522,16 @@
     <canvas id="trendChart"></canvas>
   </div>
 </div>
+
 <div id="compare-content" class="tab-content">
-  <div style="max-width: 900px; margin: 0 auto; display: flex; gap: 2rem; flex-wrap: wrap; align-items: flex-start;">
+  
     
-    <!-- Filter Box -->
-<div id="category-buttons" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
-  <button class="cat-btn active" data-cat="all">📊 All</button>
-  <button class="cat-btn" data-cat="vegetables">🥬 Vegetables</button>
-  <button class="cat-btn" data-cat="meat">🍖 Meat</button>
-  <button class="cat-btn" data-cat="seafood">🐟 Seafood</button>
-  <button class="cat-btn" data-cat="snacks">🍪 Snacks</button>
-  <button class="cat-btn" data-cat="beverages">🥤 Beverages</button>
-  <button class="cat-btn" data-cat="others">🛒 Others</button>
+    <!-- Filter Buttons -->
+
+<!-- Comparison Bar Chart -->
+<div style="width: 100%; max-width: 800px; margin: 2rem auto 0;">
+  <canvas id="comparisonBarChart" style="height: 80%;"></canvas>
 </div>
-
-
-   
-
-    <!-- Comparison Summary -->
-    <div id="comparison-summary" style="flex: 3; background: #fffbea; border-left: 5px solid orange; border-radius: 6px; padding: 1rem;">
-      <p style="margin: 0; font-weight: 500; color: #d35400;">
-        📊 You are spending <strong>12% more</strong> this month than other similar Kiappers in Singapore.
-      </p>
-    </div>
-  </div>
-
-  <!-- Comparison Table -->
-  <table id="compare-table" style="width: 100%; max-width: 900px; margin: 2rem auto 0; border-collapse: collapse; background: white; border: 1px solid #ddd;">
-    <thead style="background: #f2f2f2;">
-      <tr>
-        <th style="padding: 0.75rem; border: 1px solid #ddd;">Name</th>
-        <th style="padding: 0.75rem; border: 1px solid #ddd;">April Spending</th>
-        <th style="padding: 0.75rem; border: 1px solid #ddd;">May Spending</th>
-        <th style="padding: 0.75rem; border: 1px solid #ddd;">Change (%)</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Vegetables -->
-      <tr data-category="vegetables"><td>You</td><td>$80</td><td>$95</td><td style="color: green;">+18.8%</td></tr>
-      <tr data-category="vegetables"><td>Alice</td><td>$75</td><td>$70</td><td style="color: red;">-6.7%</td></tr>
-      <tr data-category="vegetables"><td>Ben</td><td>$90</td><td>$85</td><td style="color: green;">-5.6%</td></tr>
-      <tr data-category="vegetables"><td>Chloe</td><td>$85</td><td>$88</td><td style="color: green;">+3.5%</td></tr>
-
-      <!-- Meat -->
-      <tr data-category="meat"><td>You</td><td>$130</td><td>$125</td><td style="color: green;">-3.8%</td></tr>
-      <tr data-category="meat"><td>Alice</td><td>$140</td><td>$150</td><td style="color: orange;">+7.1%</td></tr>
-      <tr data-category="meat"><td>Ben</td><td>$110</td><td>$115</td><td style="color: green;">+4.5%</td></tr>
-      <tr data-category="meat"><td>Chloe</td><td>$120</td><td>$130</td><td style="color: orange;">+8.3%</td></tr>
-
-      <!-- Seafood -->
-      <tr data-category="seafood"><td>You</td><td>$90</td><td>$105</td><td style="color: orange;">+16.7%</td></tr>
-      <tr data-category="seafood"><td>Alice</td><td>$95</td><td>$92</td><td style="color: green;">-3.2%</td></tr>
-      <tr data-category="seafood"><td>Ben</td><td>$100</td><td>$98</td><td style="color: green;">-2%</td></tr>
-      <tr data-category="seafood"><td>Chloe</td><td>$110</td><td>$112</td><td style="color: orange;">+1.8%</td></tr>
-
-      <!-- Snacks -->
-      <tr data-category="snacks"><td>You</td><td>$70</td><td>$85</td><td style="color: orange;">+21.4%</td></tr>
-      <tr data-category="snacks"><td>Alice</td><td>$60</td><td>$65</td><td style="color: orange;">+8.3%</td></tr>
-      <tr data-category="snacks"><td>Ben</td><td>$85</td><td>$80</td><td style="color: green;">-5.9%</td></tr>
-      <tr data-category="snacks"><td>Chloe</td><td>$75</td><td>$78</td><td style="color: green;">+4%</td></tr>
-
-      <!-- Beverages -->
-      <tr data-category="beverages"><td>You</td><td>$50</td><td>$60</td><td style="color: orange;">+20%</td></tr>
-      <tr data-category="beverages"><td>Alice</td><td>$55</td><td>$58</td><td style="color: green;">+5.5%</td></tr>
-      <tr data-category="beverages"><td>Ben</td><td>$60</td><td>$57</td><td style="color: green;">-5%</td></tr>
-      <tr data-category="beverages"><td>Chloe</td><td>$52</td><td>$54</td><td style="color: green;">+3.8%</td></tr>
-
-      <!-- Others -->
-      <tr data-category="others"><td>You</td><td>$100</td><td>$95</td><td style="color: green;">-5%</td></tr>
-      <tr data-category="others"><td>Alice</td><td>$105</td><td>$110</td><td style="color: orange;">+4.8%</td></tr>
-      <tr data-category="others"><td>Ben</td><td>$90</td><td>$85</td><td style="color: green;">-5.6%</td></tr>
-      <tr data-category="others"><td>Chloe</td><td>$95</td><td>$100</td><td style="color: orange;">+5.3%</td></tr>
-   
- 
- </tbody>
-  </table>
 </div>
 
  
@@ -665,10 +597,15 @@
   <input type="hidden" name="imagePath" value="<%= image %>" />
 <input type="hidden" name="processedImage" value="<%= processedImage %>" />
   <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem;">
-    <div>
-      <label for="supplier">Supermarket:</label><br />
-      <input type="text" id="supplier" name="supplier" value="<%= receipt.supplier_name || '' %>" required />
-    </div>
+   <div><label for="supplier">Supermarket:</label><br />
+<select id="supplier" name="supplier" required>
+  <option value="">Select Supermarket</option>
+  <option value="NTUC Fairprice" <%= receipt.supplier_name === 'NTUC Fairprice' ? 'selected' : '' %>>NTUC Fairprice</option>
+  <option value="Sheng Siong" <%= receipt.supplier_name === 'Sheng Siong' ? 'selected' : '' %>>Sheng Siong</option>
+  <option value="Giant" <%= receipt.supplier_name === 'Giant' ? 'selected' : '' %>>Giant</option>
+  <option value="Cold Storage" <%= receipt.supplier_name === 'Cold Storage' ? 'selected' : '' %>>Cold Storage</option>
+</select></div>
+
 
     <div>
       <label for="date">Date:</label><br />
@@ -783,6 +720,10 @@
     setTimeout(initTrendChart, 100); // give DOM time to render
     window.chartInitialized = true;
   }
+    if (tab === 'compare' && !window.barChartInitialized) {
+    setTimeout(fetchComparisonData, 100);
+    window.barChartInitialized = true;
+  }
 }
 
  
@@ -792,15 +733,23 @@
 
 <!-- Compare-->
 <script>
-  const categoryData = {
-    all:        { label: "All Categories", icon: "📊", color: "#d35400" },
-    vegetables: { label: "Vegetables", icon: "🥬", color: "#27ae60" },
-    meat:       { label: "Meat", icon: "🍖", color: "#c0392b" },
-    seafood:    { label: "Seafood", icon: "🐟", color: "#2980b9" },
-    snacks:     { label: "Snacks", icon: "🍪", color: "#e67e22" },
-    beverages:  { label: "Beverages", icon: "🥤", color: "#8e44ad" },
-    others:     { label: "Others", icon: "🛒", color: "#7f8c8d" }
-  };
+const categoryData = {
+  all:        { label: "All Categories", icon: "📊", color: "#d35400" },
+  vegetables: { label: "Vegetables", icon: "🥬", color: "#27ae60" },
+  meat:       { label: "Meat", icon: "🍖", color: "#c0392b" },
+  seafood:    { label: "Seafood", icon: "🐟", color: "#2980b9" },
+  snacks:     { label: "Snacks", icon: "🍪", color: "#e67e22" },
+  beverages:  { label: "Beverages", icon: "🥤", color: "#8e44ad" },
+  eggs:       { label: "Eggs", icon: "🥚", color: "#e67e22" },
+  staple:     { label: "Staple", icon: "🍚", color: "#f39c12" },
+  dairy:      { label: "Dairy", icon: "🧀", color: "#3498db" },
+  bakery:     { label: "Bakery", icon: "🥖", color: "#cd853f" },
+  condiments: { label: "Condiments", icon: "🧂", color: "#bdc3c7" },
+  household:  { label: "Household", icon: "🧹", color: "#34495e" },
+  toiletries: { label: "Toiletries", icon: "🧻", color: "#7f8c8d" },
+  others:     { label: "Others", icon: "🛒", color: "#7f8c8d" },
+};
+
 
 function updateComparison(selectedCategory) {
   const selected = selectedCategory || document.querySelector('.cat-btn.active')?.dataset.cat || "all";
@@ -962,6 +911,118 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+<script>
+  let barChart;
+  const categoryIcons = {
+    vegetables: "🥬", meat: "🍖", seafood: "🐟", snacks: "🍪", beverages: "🥤",
+    eggs: "🥚", staple: "🍚", dairy: "🧀", bakery: "🥖", condiments: "🧂",
+    household: "🧹", toiletries: "🧻", others: "🛒"
+  };
+
+  const categoryColors = {
+    vegetables: "#27ae60", meat: "#c0392b", seafood: "#2980b9", snacks: "#e67e22", beverages: "#8e44ad",
+    eggs: "#e67e22", staple: "#f39c12", dairy: "#3498db", bakery: "#cd853f", condiments: "#bdc3c7",
+    household: "#34495e", toiletries: "#7f8c8d", others: "#7f8c8d"
+  };
+
+  let selectedMonth = new Date().getMonth(); // Default to current month
+
+  async function fetchComparisonData(monthIndex = selectedMonth) {
+    try {
+      const res = await fetch(`/api/category-breakdown?month=${monthIndex}`);
+      const data = await res.json();
+      setTimeout(() => renderBarChart(data), 150);
+    } catch (err) {
+      console.error('❌ Failed to fetch comparison data:', err);
+    }
+  }
+
+  function renderBarChart(dataMap = {}) {
+    const canvas = document.getElementById("comparisonBarChart");
+    if (!canvas || canvas.offsetParent === null) {
+      console.warn("❌ comparisonBarChart canvas not visible yet");
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    const categories = Object.keys(dataMap);
+    const labels = categories.map(cat => `${categoryIcons[cat.toLowerCase()] || "📊"} ${cat}`);
+    const values = Object.values(dataMap);
+    const backgroundColors = categories.map(cat => categoryColors[cat.toLowerCase()] || "#f39c12");
+
+    if (barChart) barChart.destroy();
+
+    barChart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: backgroundColors,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => `$${ctx.parsed.y.toFixed(2)}`
+            }
+          },
+          
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: val => `$${val}`
+            }
+          }
+        }
+      },
+      
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const chartSection = document.getElementById("compare-content");
+    if (!chartSection) return;
+
+    const monthFilter = document.createElement("div");
+    monthFilter.style.cssText = "display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin:1rem 0";
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    months.forEach((label, i) => {
+      const btn = document.createElement("button");
+      btn.className = "cat-btn month-btn" + (i === selectedMonth ? " active" : "");
+      btn.textContent = label;
+      btn.onclick = () => {
+        selectedMonth = i;
+        document.querySelectorAll(".month-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        fetchComparisonData(i);
+      };
+      monthFilter.appendChild(btn);
+    });
+
+    chartSection.prepend(monthFilter);
+
+    const observer = new MutationObserver(() => {
+      const canvas = document.getElementById("comparisonBarChart");
+      if (canvas && canvas.offsetParent !== null) {
+        fetchComparisonData();
+        observer.disconnect();
+      }
+    });
+
+    observer.observe(chartSection, { attributes: true, attributeFilter: ['class'], subtree: true });
+  });
+</script>
+
+
 
 
 

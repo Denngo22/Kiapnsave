@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Settings | Kiap N'Save</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f9f9ff;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: white;
+      border-bottom: 1px solid #eee;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo img {
+      height: 40px;
+    }
+    .logo span {
+      font-size: 1.5rem;
+      color: #28a745;
+      font-weight: bold;
+    }
+    nav a {
+      margin: 0 1rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    nav a:nth-child(1) { color: #8e44ec; }
+    nav a:nth-child(2) { color: #2980b9; }
+    nav a:nth-child(3) { color: #27ae60; }
+    .signout {
+      border: 1px solid #f39c12;
+      color: #f39c12;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      background: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .main {
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    h2 {
+      color: orange;
+    }
+    form {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      border: 2px solid #ffe0b2;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.5rem 1rem;
+      background: orange;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .avatar-selection {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .avatar-selection label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .avatar-selection input[type="radio"] {
+      margin-top: 0.5rem;
+    }
+    .avatar-selection img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+    }
+    .avatar-selection input[type="radio"]:checked + img {
+      border-color: orange;
+    }
+    .delete-section {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .delete-section button {
+      background: #e74c3c;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="/images/logobetter.png" alt="Logo">
+      <span>Kiap N'Save</span>
+    </div>
+    <nav>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/friends">Friends</a>
+      <a href="/settings">Settings</a>
+    </nav>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <% const rawGender = user.gender?.trim().toLowerCase();
+         const prefix = rawGender === 'female' ? 'Aunty' : rawGender === 'male' ? 'Uncle' : '';
+         const nameCapitalized = user.name.charAt(0).toUpperCase() + user.name.slice(1); %>
+      <span style="font-size: 1rem; font-weight: 500; color: #333;">
+        👋 Hi again, <strong id="username"><%= prefix %> <%= nameCapitalized %>!</strong>
+      </span>
+      <button class="signout" onclick="location.href='/logout'">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <h2>🛠 Settings</h2>
+
+    <form action="/settings/avatar" method="POST">
+      <label>Change Avatar</label>
+      <div class="avatar-selection">
+        <% for (let i = 1; i <= 6; i++) { %>
+          <label>
+            <input type="radio" name="avatarId" value="<%= i %>" <%= user.avatarId === i ? 'checked' : '' %> />
+            <img src="/images/avatar<%= i %>.png" alt="Avatar <%= i %>">
+          </label>
+        <% } %>
+      </div>
+      <button type="submit">Update Avatar</button>
+    </form>
+
+    <form action="/settings/email" method="POST">
+      <label for="email">Edit Email</label>
+      <input type="email" name="email" id="email" value="<%= user.email %>" required>
+      <button type="submit">Update Email</button>
+    </form>
+
+    <form action="/settings/password" method="POST">
+      <label for="password">New Password</label>
+      <input type="password" name="password" id="password" required>
+      <button type="submit">Change Password</button>
+    </form>
+
+    <div class="delete-section">
+      <p>😢 We’ll be sad to see you go.</p>
+      <form action="/settings/delete-account" method="POST">
+        <button type="submit">Delete My Account</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

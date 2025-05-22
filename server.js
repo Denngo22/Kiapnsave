@@ -442,6 +442,9 @@ app.get('/dashboard', async (req, res) => {
   const user = req.session.user;
   if (!user) return res.redirect('/login');
 
+  // ✅ Refetch full user including gender
+  const fulluser = await prisma.user.findUnique({ where: { id: user.id } });
+
   const now = new Date();
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -540,6 +543,210 @@ if (Object.keys(spendingTrend).length < 2) {
 }
 
 });
+
+app.get('/friends', async (req, res) => {
+  if (!req.session.user?.id) return res.redirect('/');
+
+  const userId = req.session.user.id;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, gender: true }
+  });
+
+  const friendLinks = await prisma.friend.findMany({
+    where: { userId },
+    include: { friend: true }
+  });
+
+  const friends = friendLinks.map(link => ({
+  ...link.friend,
+  avatarUrl: `/images/avatars/avatar${(link.friend.id % 6) + 1}.png`
+}));
+
+
+  res.render('pages/friends', { user, friends });
+});
+
+
+app.post('/add-friend', async (req, res) => {
+  const { email } = req.body;
+  const userId = req.session.user?.id;
+  if (!userId) return res.redirect('/');
+
+  const target = await prisma.user.findUnique({ where: { email } });
+  if (!target || target.id === userId) return res.redirect('/friends');
+
+  const exists = await prisma.friend.findFirst({
+    where: { userId, friendId: target.id }
+  });
+
+  if (!exists) {
+    await prisma.friend.createMany({
+      data: [
+        { userId, friendId: target.id },
+        { userId: target.id, friendId: userId }
+      ]
+    });
+  }
+
+  res.redirect('/friends');
+});
+
+
+app.post('/remove-friend', async (req, res) => {
+  const { friendId } = req.body;
+  const userId = req.session.user?.id;
+  if (!userId) return res.redirect('/');
+
+  await prisma.friend.deleteMany({
+    where: {
+      OR: [
+        { userId, friendId: parseInt(friendId) },
+        { userId: parseInt(friendId), friendId: userId }
+      ]
+    }
+  });
+
+  res.redirect('/friends');
+});
+
+app.get('/api/search-friends', async (req, res) => {
+  const name = req.query.name?.trim().toLowerCase();
+  const currentUserId = req.session.user?.id;
+
+  if (!name || !currentUserId) return res.json([]);
+
+  const matches = await prisma.user.findMany({
+    where: {
+      name: { contains: name, mode: 'insensitive' },
+      NOT: { id: currentUserId }
+    },
+    select: { id: true, name: true, email: true }
+  });
+
+  res.json(matches);
+});
+
+app.get('/settings', async (req, res) => {
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  const fullUser = await prisma.user.findUnique({ where: { id: user.id } });
+
+  res.render('pages/settings', { user: fullUser });
+});
+
+app.post('/update-avatar', async (req, res) => {
+  const { avatarId } = req.body;
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { avatar: parseInt(avatarId) }
+  });
+
+  res.redirect('/settings');
+});
+
+app.post('/update-email', async (req, res) => {
+  const { email } = req.body;
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { email }
+  });
+
+  req.session.user.email = email; // keep session in sync
+  res.redirect('/settings');
+});
+
+app.post('/update-password', async (req, res) => {
+  const { newPassword } = req.body;
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { password: newPassword } // Plaintext for now
+  });
+
+  res.redirect('/settings');
+});
+
+app.post('/delete-account', async (req, res) => {
+  const user = req.session.user;
+  if (!user) return res.redirect('/login');
+
+  await prisma.friend.deleteMany({
+    where: {
+      OR: [{ userId: user.id }, { friendId: user.id }]
+    }
+  });
+
+  await prisma.receiptItem.deleteMany({
+    where: {
+      receipt: { userId: user.id }
+    }
+  });
+
+  await prisma.receipt.deleteMany({
+    where: { userId: user.id }
+  });
+
+  await prisma.user.delete({
+    where: { id: user.id }
+  });
+
+  req.session.destroy(() => {
+    res.redirect('/');
+  });
+});
+
+
+// Add this near your other routes
+app.get('/api/category-breakdown', async (req, res) => {
+  try {
+    const userId = req.session.user?.id;
+    if (!userId) return res.status(401).json({ error: "Not logged in" });
+
+    const month = parseInt(req.query.month); // 0-based month index (0 = Jan)
+    const year = new Date().getFullYear(); // assumes current year
+
+    const items = await prisma.receiptItem.findMany({
+      where: {
+        receipt: {
+          userId,
+          date: {
+            gte: new Date(year, month, 1),
+            lt: new Date(year, month + 1, 1)
+          }
+        }
+      },
+      select: {
+        category: true,
+        price: true
+      }
+    });
+
+    const breakdown = {};
+    items.forEach(({ category, price }) => {
+      const key = category?.toLowerCase() || 'others';
+      breakdown[key] = (breakdown[key] || 0) + price;
+    });
+
+    res.json(breakdown);
+  } catch (err) {
+    console.error("❌ Failed to compute category breakdown:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
+
 
 // Start server
 app.listen(8080, () => {
