@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VNWNXJPCYZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VNWNXJPCYZ');
+</script>
+
+
+  <title>Kiap N' Save - Landing Page</title>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    .section {
+      min-height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+      position: relative;
+      background: linear-gradient(270deg, #ffdce0, #ffe9d6, #fffacc, #d8fcd4, #d6f0ff, #e4d6ff, #ffdce0);
+      background-size: 1400% 1400%;
+      animation: rainbowFlow 30s ease infinite;
+    }
+
+    h1, p {
+      margin: 20px 0;
+    }
+
+    .highlight {
+      color: orange;
+    }
+
+    .buttons {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .buttons a {
+      display: inline-block;
+      width: 100%;
+      padding: 0.9rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      text-align: center;
+      text-decoration: none;
+      font-weight: bold;
+      box-sizing: border-box;
+    }
+
+    .get-started {
+      background-color: orange;
+      color: white;
+    }
+
+    .login-button {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .learn-more {
+      background-color: transparent;
+      color: orange;
+      border: 2px solid orange;
+    }
+
+    .scroll-icon {
+      display: none;
+    }
+
+    @keyframes rainbowFlow {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .big-logo {
+      height: auto;
+      max-width: 80%;
+      animation: bounce 3s infinite;
+      margin-top: 1.5rem;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .speech-bubble {
+      margin-top: 1rem;
+      max-width: 90%;
+      padding: 1rem;
+      background: white;
+      border-radius: 1rem;
+      position: relative;
+      font-size: 1rem;
+      color: #444;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .speech-bubble::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 30px;
+      border-width: 15px 15px 0;
+      border-style: solid;
+      border-color: white transparent transparent;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      .buttons a {
+        font-size: 1rem;
+        padding: 0.8rem;
+      }
+
+      .big-logo {
+        max-width: 60%;
+        height: auto;
+      }
+
+      .speech-bubble {
+        font-size: 0.9rem;
+        max-width: 80%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="section">
+    <h1>Track Your Grocery Spending <span class="highlight">Effortlessly</span></h1>
+    <p>Never lose track of your receipts again. Upload, analyze, and save on your grocery expenditures.</p>
+    <div class="buttons">
+      <a href="/signup" class="get-started">Get Started</a>
+      <a href="#" class="login-button" onclick="document.getElementById('login-modal').style.display='flex'">Login now!</a>
+      <a href="#features" class="learn-more">Click here to learn More</a>
+    </div>
+    <div class="speech-bubble"><b>“Come come, I help you save $$$”</b></div>
+    <img src="/images/logotransparent.png" alt="Kiap N'Save mascot" class="big-logo" />
+  </div>
+
+
+  <!-- 🔐 Login Modal (placed outside the flex container to avoid layout shift) -->
+  <div id="login-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="document.getElementById('login-modal').style.display='none'">&times;</span>
+
+      <div id="login-section">
+        <h2>Login</h2>
+        <form id="loginForm" method="POST" action="/login">
+          <input name="email" type="email" placeholder="Email" required />
+          <input name="password" type="password" placeholder="Password" required />
+          <a href="#" onclick="event.preventDefault(); showForgotPassword();" style="font-size: 0.9rem; color: #007bff;">
+  Forgot password?
+</a>
+
+          <button type="submit" class="submit-button">Sign In</button>
+        </form>
+        <p id="loginError" style="color: red; font-size: 0.9rem;"></p>
+      </div>
+
+      <!-- Forgot Password Section -->
+      <div id="forgot-section" style="display:none;">
+        <h2>Forgot Password</h2>
+        <form id="forgotForm" method="POST" action="/forgot-password">
+          <input name="email" type="email" placeholder="Enter your email" required />
+          <input name="secret" type="password" placeholder="Type the magic phrase" required />
+          <button type="submit" class="submit-button">Recover Password</button>
+        </form>
+        <p id="forgotError" style="color: red; font-size: 0.9rem;"></p>
+        <a href="#" onclick="showLogin()" style="font-size: 0.9rem; color: #007bff;">Back to login</a>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+
+
+
+  <!-- Section 2: Features -->
+<div id="features" class="section">
+  <h1>Smart features for savvy aunties and uncles </h1>
+
+  <div style="display: flex; justify-content: center; align-items: center; gap: 3rem; flex-wrap: wrap; margin-top: 2rem;">
+    
+    <!-- Left: Mascot with speech bubble -->
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <!-- Speech Bubble -->
+      <div class="speech-bubble">
+        <b>“Wah why your vege so ex!”</b>
+      </div>
+
+      <!-- Flipped Mascot -->
+      <img src="/images/budget.png"
+           alt="Budgeting mascot"
+           style="max-height: 350px; width: auto; transform: scaleX(-1);" />
+    </div>
+
+    <div class="card-scroll-wrapper">
+
+
+  <!-- Scrollable Content -->
+  <div class="card-scroll" id="cardScroll">
+    <!-- Page 1: Monthly Overview -->
+    <div class="card">
+      <h3>Monthly Overview <span style="float:right;">May 2025</span></h3>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 1rem;">
+        <span style="color: purple;">$580 spent</span>
+        <span style="color: #555;">Budget: $800</span>
+      </div>
+      <div class="info-row">
+        <div class="info-box category">
+          <h3>Top Category</h3>
+          <p>Fresh Produce</p>
+          <p style="color: orange;">$220</p>
+        </div>
+        <div class="info-box store">
+          <h3>Favorite Store</h3>
+          <p>FairPrice</p>
+          <p style="color: green;">10 Visits</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 2: Spending Trend -->
+    <div class="card">
+      <h3>Spending Trend</h3>
+      <canvas id="trendChart" width="300" height="200"></canvas>
+    </div>
+  </div>
+
+ 
+</div>
+  </div>
+
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png"
+       class="scroll-icon" onclick="scrollToSection(2)" alt="Scroll down">
+</div>
+
+
+
+<!-- Section 3: Explore Prices -->
+<div class="section" style="position: relative; height: 100vh; padding-top: 60px; padding-bottom: 60px; justify-content: flex-start; overflow: hidden;">
+  <h1 style="position: relative; z-index: 1; margin: 0;">Don't say I bo jio</h1>
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2rem; align-items: flex-start; margin-top: 1.5rem; position: relative; z-index: 1; max-height: 80vh; overflow: hidden;">
+    <!-- Map + Pins -->
+    <div style="flex: 1; min-width: 300px; max-width: 500px; position: relative;">
+      <img src="/images/SGmap.png" alt="Singapore Map"
+           style="position: relative; width: 100%; opacity: 0.15; pointer-events: none; border-radius: 16px;" />
+
+      <!-- Price Pins -->
+      <div style="position: absolute; top: 35%; left: 20%; background: orange; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$5.80</div>
+      <div style="position: absolute; top: 62%; left: 48%; background: green; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$7.10</div>
+      <div style="position: absolute; top: 28%; left: 75%; background: red; padding: 6px 12px; border-radius: 16px; color: white; font-weight: bold; font-size: 0.9rem; pointer-events: none;">$2.30</div>
+    </div>
+
+    <!-- Comparison Card with Friends -->
+    <div class="card" style="max-width: 360px; padding: 1.2rem; overflow-y: auto;">
+      <h3 style="margin-top: 0;">👥 Compare with Friends</h3>
+      <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 1rem;">
+        <div style="text-align: center;">
+          <img src="/images/p1.png" alt="Ryan" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Robert</b><br/>$5.80</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="/images/p2.png" alt="James" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Steve</b><br/>$2.30</p>
+        </div>
+        <div style="text-align: center;">
+          <img src="/images/p3.png" alt="Rachel" style="width: 60px; height: 60px; border-radius: 50%;" />
+          <p style="margin: 0.5rem 0 0;"><b>Natasha</b><br/>$7.10</p>
+        </div>
+      </div>
+      <!-- Mascot with speech bubble -->
+      <div style="margin-top: 1rem; display: flex; flex-direction: column; align-items: center;">
+        <img src="/images/chicken.png" alt="Kiap N'Save Mascot" style="height: 80px; width: auto;" />
+        <div class="speech-bubble" style="margin-top: 0.5rem; max-width: 220px; padding: 0.75rem; background: #fff8dc; border-radius: 12px; font-size: 0.85rem; color: #444; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <b>"$7.10 for eggs?! I better go kampung buy already lah!"</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png"
+       class="scroll-icon" onclick="scrollToSection(3)" alt="Scroll down">
+</div>
+
+
+<!-- Section 4: Sign Up -->
+  <div class="section">
+    <a href="/signup" class="signup-button"><img src="/images/getstarted.png" style="max-width: 50%; height: auto;">
+    </a>
+    
+  </div>
+
+  
+
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const res = await fetch("/login", {
+    method: "POST",
+    body: new URLSearchParams(formData),
+  });
+
+  if (res.redirected) {
+    // ✅ Green glow animation
+    const formBox = document.querySelector(".modal-content");
+    formBox.style.boxShadow = "0 0 20px limegreen";
+
+    setTimeout(() => {
+      window.location.href = res.url;
+    }, 1000);
+  } else {
+    const errorText = await res.text();
+    document.getElementById("loginError").textContent = errorText;
+  }
+});
+</script>
+
+<script>
+  function showForgotPassword() {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('forgot-section').style.display = 'block';
+  }
+
+  function showLogin() {
+    document.getElementById('forgot-section').style.display = 'none';
+    document.getElementById('login-section').style.display = 'block';
+  }
+</script>
+
+
+
+</body>
+</html>

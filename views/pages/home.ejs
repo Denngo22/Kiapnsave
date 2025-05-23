@@ -403,7 +403,7 @@
   }
 
   .section {
-    min-height: 100vh;
+    height: 100vh;
     width: 100vw;
     display: flex;
     flex-direction: column;
@@ -913,7 +913,9 @@
 
 <body>
 
-  
+  <!-- Progress Dots -->
+  <div class="scroll-indicator" id="scroll-indicator"></div>
+
  <!-- Section 1: Welcome -->
 <div class="section">
   <div class="container">
@@ -973,7 +975,8 @@
     </div>
   </div>
 
-  
+  <img src="https://img.icons8.com/ios-filled/50/000000/down-squared.png"
+       class="scroll-icon" onclick="scrollToSection(1)" alt="Scroll down">
 </div>
 
 
@@ -1099,7 +1102,62 @@
     
   </div>
 
-  
+  <script>
+    const sections = document.querySelectorAll('.section');
+    let currentIndex = 0;
+
+    // Scroll via arrow keys
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowDown' && currentIndex < sections.length - 1) {
+        scrollToSection(currentIndex + 1);
+      }
+      if (e.key === 'ArrowUp' && currentIndex > 0) {
+        scrollToSection(currentIndex - 1);
+      }
+    });
+
+    // Scroll via mouse wheel
+    let isScrolling = false;
+    window.addEventListener('wheel', function(e) {
+      if (isScrolling) return;
+      isScrolling = true;
+
+      if (e.deltaY > 0 && currentIndex < sections.length - 1) {
+        currentIndex++;
+      } else if (e.deltaY < 0 && currentIndex > 0) {
+        currentIndex--;
+      }
+
+      scrollToSection(currentIndex);
+      setTimeout(() => isScrolling = false, 700);
+    });
+
+    // Scroll programmatically
+    function scrollToSection(index) {
+      if (index >= 0 && index < sections.length) {
+        sections[index].scrollIntoView({ behavior: 'smooth' });
+        currentIndex = index;
+        updateDots();
+      }
+    }
+
+    // Dots
+    const scrollIndicator = document.getElementById('scroll-indicator');
+    for (let i = 0; i < sections.length; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'scroll-dot';
+      dot.addEventListener('click', () => scrollToSection(i));
+      scrollIndicator.appendChild(dot);
+    }
+
+    function updateDots() {
+      document.querySelectorAll('.scroll-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentIndex);
+      });
+    }
+
+    updateDots();
+  </script>
 
 
 <script>
