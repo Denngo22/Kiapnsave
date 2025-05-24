@@ -531,7 +531,211 @@
 <!-- Comparison Bar Chart -->
 <div style="width: 100%; max-width: 800px; margin: 2rem auto 0;">
   <canvas id="comparisonBarChart" style="height: 80%;"></canvas>
+
 </div>
+<hr style="margin-top: 0.5rem; border: none; border-top: 0.5px dashed #f39c12; width: 80%; margin-left: auto; margin-right: auto;" />
+
+<!-- Filter Buttons -->
+
+<!-- Comparison Flex Layout -->
+<div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start; margin-top: 1rem;">
+
+  <!-- LEFT: Friend Selector -->
+  <div style="flex: 1; min-width: 180px;">
+    <p style="font-size: 1.1rem; font-weight: 500; color: #e67e22;">Compare with:</p>
+    <div style="display: flex; flex-direction: column; gap: 1rem;">
+      <div class="friend-option active" data-friend="chloe" onclick="selectFriend(this)">
+        <img src="/images/avatar2.png" alt="Chloe" class="friend-avatar" />
+        <span>Chloe</span>
+      </div>
+      <div class="friend-option" data-friend="bob" onclick="selectFriend(this)">
+        <img src="/images/avatar3.png" alt="Bob" class="friend-avatar" />
+        <span>Bob</span>
+      </div>
+    </div>
+  </div>
+
+<!-- Store selected friend -->
+<input type="hidden" id="selectedFriend" value="" />
+
+<style>
+  .friend-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    transition: border 0.2s;
+  }
+  .friend-option:hover {
+    border-color: orange;
+    background: #fffaf0;
+  }
+  .friend-option.active {
+    border-color: orange;
+    background: #fff3e0;
+  }
+  .friend-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid orange;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  function selectFriend(elem) {
+    document.querySelectorAll('.friend-option').forEach(opt => opt.classList.remove('active'));
+    elem.classList.add('active');
+    const friendId = elem.getAttribute('data-friend');
+    document.getElementById('selectedFriend').value = friendId;
+    console.log("👥 Selected friend:", friendId);
+    // 🚀 Add comparison fetch/render logic here
+  }
+</script>
+
+</div>
+ <!-- RIGHT: Category Buttons + Result -->
+  <div style="flex: 3; min-width: 300px;">
+    <!-- Category Filter Buttons -->
+    <div id="category-filter">
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;justify-content: center;">
+        <button class="cat-btn active" data-cat="all" style="border-color: #d35400;">📊<br><small>ALL</small></button>
+        <button class="cat-btn" data-cat="vegetables" style="border-color: #27ae60;">🥬<br><small>Vegetables</small></button>
+        <button class="cat-btn" data-cat="meat" style="border-color: #c0392b;">🍖<br><small>Meat</small></button>
+        <button class="cat-btn" data-cat="seafood" style="border-color: #2980b9;">🐟<br><small>Seafood</small></button>
+        <button class="cat-btn" data-cat="snacks" style="border-color: #e67e22;">🍪<br><small>Snacks</small></button>
+        <button class="cat-btn" data-cat="beverages" style="border-color: #8e44ad;">🥤<br><small>Beverages</small></button>
+        <button class="cat-btn" data-cat="eggs" style="border-color: #e67e22;">🥚<br><small>Eggs</small></button>
+        <button class="cat-btn" data-cat="staple" style="border-color: #f39c12;">🍚<br><small>Staple</small></button>
+        <button class="cat-btn" data-cat="dairy" style="border-color: #3498db;">🧀<br><small>Dairy</small></button>
+        <button class="cat-btn" data-cat="bakery" style="border-color: #cd853f;">🥖<br><small>Bakery</small></button>
+        <button class="cat-btn" data-cat="condiments" style="border-color: #bdc3c7;">🧂<br><small>Condiments</small></button>
+        <button class="cat-btn" data-cat="household" style="border-color: #34495e;">🧹<br><small>Household</small></button>
+        <button class="cat-btn" data-cat="toiletries" style="border-color: #7f8c8d;">🧻<br><small>Toiletries</small></button>
+        <button class="cat-btn" data-cat="others" style="border-color: #7f8c8d;">🛒<br><small>Others</small></button>
+      </div>
+    </div>
+
+    <!-- Comparison Result Box -->
+    <div id="friend-comparison-result" style="display: none; margin-top: 2rem;">
+      <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; align-items: center;">
+        <!-- You -->
+        <div style="text-align: center;">
+          <img src="/images/avatar1.png" alt="You" class="friend-avatar">
+          <div style="font-weight: bold; color: #e67e22; margin-top: 0.5rem;">You</div>
+          <div style="margin-top: 0.3rem; font-size: 1rem;">Spent $<span id="you-spent">32.50</span></div>
+        </div>
+
+        <!-- VS Arrow -->
+        <div style="font-size: 2rem; font-weight: bold; color: gray;">↔</div>
+
+        <!-- Friend -->
+        <div style="text-align: center;">
+          <img id="friend-avatar" src="/images/avatar2.png" alt="Friend" class="friend-avatar">
+          <div id="friend-name" style="font-weight: bold; color: #2c3e50; margin-top: 0.5rem;">Chloe</div>
+          <div style="margin-top: 0.3rem; font-size: 1rem;">Spent $<span id="friend-spent">45.70</span></div>
+        </div>
+      </div>
+
+      <p style="text-align: center; margin-top: 1rem; font-size: 1.05rem; font-weight: 500; color: #555;">
+        💬 Chloe spent <strong>41% more</strong> than you on <strong>Snacks</strong> this month.
+      </p>
+    </div>
+  </div>
+</div>
+
+<style>
+  .friend-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid #f39c12;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  const mockSpendData = {
+    chloe: {
+      snacks: 45.70, vegetables: 20.20, meat: 36.90, seafood: 25.50,
+      beverages: 40.00, eggs: 10.00, staple: 50.00, dairy: 18.00,
+      bakery: 15.75, condiments: 6.50, household: 22.30, toiletries: 17.90,
+      others: 12.00, all: 320.75
+    },
+    bob: {
+      snacks: 30.00, vegetables: 18.50, meat: 50.00, seafood: 30.40,
+      beverages: 32.00, eggs: 8.90, staple: 45.00, dairy: 21.30,
+      bakery: 17.20, condiments: 7.10, household: 19.50, toiletries: 15.80,
+      others: 9.50, all: 305.20
+    },
+    you: {
+      snacks: 32.50, vegetables: 21.00, meat: 35.00, seafood: 28.00,
+      beverages: 25.00, eggs: 9.20, staple: 48.00, dairy: 20.00,
+      bakery: 14.30, condiments: 5.70, household: 20.00, toiletries: 18.10,
+      others: 10.00, all: 316.80
+    }
+  };
+
+  let currentFriend = 'chloe';
+  let currentCategory = 'snacks';
+
+  function updateComparisonBox() {
+    const friendName = currentFriend === "chloe" ? "Chloe" : "Bob";
+    const avatarSrc = currentFriend === "chloe" ? "/images/avatar2.png" : "/images/avatar3.png";
+
+    const yourAmount = mockSpendData.you[currentCategory] || 0;
+    const friendAmount = mockSpendData[currentFriend][currentCategory] || 0;
+    const diff = friendAmount - yourAmount;
+    const diffPercent = yourAmount === 0 ? 0 : (diff / yourAmount * 100).toFixed(1);
+    const direction = diff >= 0 ? "more" : "less";
+
+    document.getElementById('you-spent').textContent = yourAmount.toFixed(2);
+    document.getElementById('friend-spent').textContent = friendAmount.toFixed(2);
+    document.getElementById('friend-name').textContent = friendName;
+    document.getElementById('friend-avatar').src = avatarSrc;
+
+    document.querySelector('#friend-comparison-result p').innerHTML =
+      `💬 ${friendName} spent <strong>${Math.abs(diffPercent)}% ${direction}</strong> than you on <strong>${capitalize(currentCategory)}</strong> this month.`;
+
+    document.getElementById('friend-comparison-result').style.display = 'block';
+  }
+
+  function capitalize(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Friend selector
+    document.querySelectorAll('.friend-option').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.friend-option').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFriend = btn.dataset.friend;
+        updateComparisonBox();
+      });
+    });
+
+    // Category buttons
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.cat;
+        updateComparisonBox();
+      });
+    });
+
+    // Initial render
+    updateComparisonBox();
+  });
+</script>
+
+
 </div>
 
  
